@@ -8,6 +8,7 @@ public:
     Strip(unsigned int count, unsigned int dataPin, unsigned int clockPin);
 
     void setPixelColour(unsigned int pixel, ColourRGB colour);
+    void setAll(ColourRGB colour);
     void render(ColourRGB *colours);
     void draw();
 

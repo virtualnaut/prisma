@@ -17,6 +17,14 @@ void Strip::setPixelColour(unsigned int pixel, ColourRGB colour)
     pixels.at(pixel)->setRGB(colour);
 }
 
+void Strip::setAll(ColourRGB colour)
+{
+    for (unsigned int pixel = 0; pixel < pixels.size(); pixel++)
+    {
+        setPixelColour(pixel, colour);
+    }
+}
+
 void Strip::render(ColourRGB *colours)
 {
     for (unsigned int pixel; pixel < pixels.size(); pixel++)
