@@ -3,5 +3,6 @@
     "array": "cpp",
     "functional": "cpp",
     "algorithm": "cpp"
-  }
+  },
+  "rpc.enabled": true
 }

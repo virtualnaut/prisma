@@ -1,3 +1,6 @@
+#ifndef STRIP_H
+#define STRIP_H
+
 #include <vector>
 #include "pixel.h"
 #include <Arduino.h>
@@ -6,6 +9,8 @@ class Strip
 {
 public:
     Strip(unsigned int count, unsigned int dataPin, unsigned int clockPin);
+
+    unsigned int count;
 
     void setPixelColour(unsigned int pixel, ColourRGB colour);
     void setAll(ColourRGB colour);
@@ -30,10 +35,10 @@ protected:
     /** Send the end frame */
     void endFrame();
 
-    unsigned int count;
-
     unsigned int dataPin;
     unsigned int clockPin;
 
     std::vector<Pixel *> pixels;
 };
+
+#endif

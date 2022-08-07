@@ -1,1 +1,13 @@
+#include "configTemplates.h"
+
 #define BLUETOOTH_NAME "prismaDEVICE"
+#define BLUETOOH_BUFFER_SIZE 256
+#define STRIP_COUNT 2
+
+const StripConfiguration STRIPS[STRIP_COUNT] = {
+    {23,
+     22,
+     118},
+    {14,
+     12,
+     117}};
