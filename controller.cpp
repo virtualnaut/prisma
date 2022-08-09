@@ -7,8 +7,6 @@ Controller::Controller(const StripConfiguration *strips, unsigned int count)
         StripConfiguration config = strips[i];
         this->strips.push_back(new Strip(config.count, config.dataPin, config.clockPin));
     }
-
-    melds = new bool[count]{true, false};
 }
 
 void Controller::setPixel(unsigned int pixel, ColourRGB colour)
@@ -45,4 +43,9 @@ void Controller::draw()
     {
         strips[i]->draw();
     }
+}
+
+void Controller::setMelds(bool melds[STRIP_COUNT])
+{
+    memcpy(this->melds, melds, STRIP_COUNT);
 }

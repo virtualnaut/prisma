@@ -5,6 +5,7 @@
 #include "strip.h"
 #include "configTemplates.h"
 #include "colour.h"
+#include "setup.h"
 
 typedef struct Meld
 {
@@ -29,9 +30,11 @@ public:
     void setAll(ColourRGB colour);
     void draw();
 
+    void setMelds(bool melds[STRIP_COUNT]);
+
 protected:
     std::vector<Strip *> strips;
-    bool *melds;
+    bool melds[STRIP_COUNT];
 };
 
 #endif

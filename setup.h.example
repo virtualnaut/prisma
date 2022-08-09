@@ -11,3 +11,5 @@ const StripConfiguration STRIPS[STRIP_COUNT] = {
     {14,
      12,
      117}};
+
+bool DEFAULT_MELDS[STRIP_COUNT] = {true, false};
