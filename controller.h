@@ -1,5 +1,5 @@
-#ifndef MELD_H
-#define MELD_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include <vector>
 #include "strip.h"
@@ -30,11 +30,13 @@ public:
     void setAll(ColourRGB colour);
     void draw();
 
-    void setMelds(bool melds[STRIP_COUNT]);
+    void setMelds(const bool melds[STRIP_COUNT]);
+    void setOrder(const char order[STRIP_COUNT]);
 
 protected:
     std::vector<Strip *> strips;
     bool melds[STRIP_COUNT];
+    char order[STRIP_COUNT];
 };
 
 #endif

@@ -6,6 +6,7 @@ Controller::Controller(const StripConfiguration *strips, unsigned int count)
     {
         StripConfiguration config = strips[i];
         this->strips.push_back(new Strip(config.count, config.dataPin, config.clockPin));
+        this->order[i] = i;
     }
 }
 
@@ -14,7 +15,7 @@ void Controller::setPixel(unsigned int pixel, ColourRGB colour)
     unsigned int covered = 0;
     for (unsigned int i = 0; i < strips.size(); i++)
     {
-        Strip *strip = strips[i];
+        Strip *strip = strips[order[i]];
 
         if (pixel >= covered && pixel < covered + strip->count)
         {
@@ -45,7 +46,12 @@ void Controller::draw()
     }
 }
 
-void Controller::setMelds(bool melds[STRIP_COUNT])
+void Controller::setMelds(const bool melds[STRIP_COUNT])
 {
-    memcpy(this->melds, melds, STRIP_COUNT);
+    memcpy(this->melds, melds, STRIP_COUNT * sizeof(bool));
+}
+
+void Controller::setOrder(const char order[STRIP_COUNT])
+{
+    memcpy(this->order, order, STRIP_COUNT * sizeof(char));
 }

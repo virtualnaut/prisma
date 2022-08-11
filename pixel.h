@@ -1,3 +1,6 @@
+#ifndef PIXEL_H
+#define PIXEL_H
+
 #include "colour.h"
 
 class Pixel
@@ -10,3 +13,5 @@ public:
 protected:
     ColourRGB colour = {0, 0, 0};
 };
+
+#endif

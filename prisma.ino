@@ -68,11 +68,22 @@ void loop()
 
 void handleMeld()
 {
+    Serial.println("MELD");
     bool melds[STRIP_COUNT];
+    char order[STRIP_COUNT];
 
     for (unsigned int strip = 0; strip < STRIP_COUNT; strip++)
     {
-        melds[strip] = ((bluetoothBuffer[(strip / 8) + 1]) >> (7 - (strip % 8))) & 1;
+        order[strip] = bluetoothBuffer[strip + 1];
+        Serial.printf("ORDER %d\n", order[strip]);
     }
+
+    for (unsigned int strip = 0; strip < STRIP_COUNT; strip++)
+    {
+        melds[strip] = ((bluetoothBuffer[(strip / 8) + STRIP_COUNT + 1]) >> (7 - (strip % 8))) & 1;
+        Serial.println(melds[strip] ? "true" : "false");
+    }
+
     lights.setMelds(melds);
+    lights.setOrder(order);
 }
