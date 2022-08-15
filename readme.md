@@ -61,3 +61,36 @@ In this example, the order of the second and third strips have been swapped, so 
 ---
 
 </details>
+
+### Virtual Strips
+The virtual strips command is used to split the melded strip into a number of virtual strips that can be addressed separately.
+
+| Byte | Description                                       |
+| ---- | ------------------------------------------------- |
+| 0    | Uppercase 'V'                                     |
+| ...  | A number of virtual strip definitions (see below) |
+
+#### Virtual Strip Definition
+| Offset | Description                                                                                                        |
+| ------ | ------------------------------------------------------------------------------------------------------------------ |
+| 0      | Whether pixels are referenced using a pixel offset or a fraction of the length. 0 for pixel offset, else fraction. |
+| 1,2    | The start pixel of the strip (2-byte, BE, unsigned integer)                                                        |
+| 3,4    | The end pixel of the strip (2-byte, BE, unsigned integer)                                                          |
+
+<details>
+<summary>Example</summary>
+
+---
+
+`01010110 || 00000000 || 00000000 00000000 || 00000000 00110010 || 00000001 || 01100100 00000000 || 00000001 00101100`
+
+In decimal,
+
+`'V' 0 0 50 1 300 51`
+
+This strip has 300 pixels, divided into 2 strips, where one strip starts at 0 and ends at 50, and the other starts at 300 and ends at 51.
+The first strip is accessed using the absolute absolute pixel index and the second is accessed using a fraction.
+
+---
+
+</details>

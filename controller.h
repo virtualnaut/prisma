@@ -2,24 +2,26 @@
 #define CONTROLLER_H
 
 #include <vector>
+#include <algorithm>
 #include "strip.h"
 #include "configTemplates.h"
 #include "colour.h"
 #include "setup.h"
 
-typedef struct Meld
-{
-    bool atStartA;
-    unsigned int stripA;
-    bool atStartB;
-    unsigned int stripB;
-} Meld;
+#define MAX_VIRTUAL_STRIPS 256
 
 typedef struct VirtualStrip
 {
-    unsigned int start;
-    unsigned int end;
+    bool isFractional;  // Whether values set on this strip are fractions of the full strip of a number of pixels.
+    unsigned int start; // The start pixel for this strip.
+    unsigned int end;   // The end pixel for this strip.
 } VirtualStrip;
+
+enum VirtualStripStatus
+{
+    Valid,      // The virtual strips set had no errors.
+    OutOfBounds // One or more virtual strips include pixels that don't exist.
+};
 
 class Controller
 {
@@ -33,8 +35,16 @@ public:
     void setMelds(const bool melds[STRIP_COUNT]);
     void setOrder(const char order[STRIP_COUNT]);
 
+    VirtualStripStatus setVirtualStrips(VirtualStrip strips[MAX_VIRTUAL_STRIPS], char count);
+
+    void setVirtualPixel(unsigned int strip, uint16_t value, ColourRGB colour);
+
 protected:
     std::vector<Strip *> strips;
+    unsigned int pixelCount = 0;
+
+    std::vector<VirtualStrip> virtualStrips;
+
     bool melds[STRIP_COUNT];
     char order[STRIP_COUNT];
 };

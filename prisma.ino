@@ -7,10 +7,12 @@
 #endif
 
 #define HEADER_SIZE 3
+#define VIRTUAL_STRIP_SIZE 5
 
 BluetoothSerial bluetooth;
 
 char bluetoothBuffer[BLUETOOTH_BUFFER_SIZE];
+uint16_t contentSize = 0;
 
 Controller lights = Controller(STRIPS, STRIP_COUNT);
 
@@ -19,10 +21,6 @@ void setup()
     Serial.begin(115200);
 
     bluetooth.begin(BLUETOOTH_NAME);
-
-    lights.setPixel(100, {255, 0, 0});
-    lights.setMelds(DEFAULT_MELDS);
-    lights.draw();
 }
 
 void loop()
@@ -43,10 +41,11 @@ void loop()
         // Read the size.
         char sizeBuffer[2];
         bluetooth.readBytes(sizeBuffer, 2);
-        uint16_t messageSize = (sizeBuffer[0] << 8) + sizeBuffer[1];
+
+        contentSize = ((sizeBuffer[0] << 8) + sizeBuffer[1]) - HEADER_SIZE;
 
         // Read the actual message.
-        bluetooth.readBytes(bluetoothBuffer, messageSize - HEADER_SIZE);
+        bluetooth.readBytes(bluetoothBuffer, contentSize);
 
         // Decide what to do based on the first byte.
         switch (bluetoothBuffer[0])
@@ -54,9 +53,18 @@ void loop()
         case 'M':
             handleMeld();
             break;
+        case 'V':
+            handleVirtualStrips();
+            break;
         case '_':
             lights.setAll({0, 0, 0});
             lights.setPixel(bluetoothBuffer[1], {255, 0, 0});
+            lights.draw();
+            break;
+        case '.':
+            lights.setAll({0, 0, 0});
+            lights.setVirtualPixel(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 255, 0});
+            // lights.setVirtualPixel(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 255, 0});
             lights.draw();
             break;
         default:
@@ -66,24 +74,58 @@ void loop()
     delay(5);
 }
 
+/**
+ * Handle a meld message
+ */
 void handleMeld()
 {
-    Serial.println("MELD");
     bool melds[STRIP_COUNT];
     char order[STRIP_COUNT];
 
     for (unsigned int strip = 0; strip < STRIP_COUNT; strip++)
     {
         order[strip] = bluetoothBuffer[strip + 1];
-        Serial.printf("ORDER %d\n", order[strip]);
-    }
-
-    for (unsigned int strip = 0; strip < STRIP_COUNT; strip++)
-    {
         melds[strip] = ((bluetoothBuffer[(strip / 8) + STRIP_COUNT + 1]) >> (7 - (strip % 8))) & 1;
-        Serial.println(melds[strip] ? "true" : "false");
     }
 
     lights.setMelds(melds);
     lights.setOrder(order);
+}
+
+void handleVirtualStrips()
+{
+    VirtualStrip virtualStrips[MAX_VIRTUAL_STRIPS];
+    unsigned int stripCount = (contentSize - 1) / VIRTUAL_STRIP_SIZE;
+
+    if ((contentSize - 1) % VIRTUAL_STRIP_SIZE)
+    {
+        // Invalid message!
+        Serial.println("Invalid virtual strip message");
+        return;
+    }
+
+    for (unsigned int strip = 0; strip < stripCount; strip++)
+    {
+        virtualStrips[strip] = {
+            (bool)bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE + 1)],
+            (unsigned int)((bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 2]) << 8) + (unsigned int)(bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 3]),
+            (unsigned int)((bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 4]) << 8) + (unsigned int)(bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 5]),
+        };
+    }
+
+    VirtualStripStatus error = lights.setVirtualStrips(virtualStrips, stripCount);
+
+    switch (error)
+    {
+    case VirtualStripStatus::OutOfBounds:
+        Serial.println("One or more virtual strips go out of bounds");
+        lights.setAll({255, 0, 0});
+        lights.draw();
+        delay(500);
+        lights.setAll({0, 0, 0});
+        lights.draw();
+        break;
+    default:
+        Serial.println("Successfully set the virtual strips");
+    }
 }
