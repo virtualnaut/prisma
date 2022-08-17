@@ -2,8 +2,9 @@
 #define STRIP_H
 
 #include <vector>
-#include "pixel.h"
 #include <Arduino.h>
+
+#include "colour.h"
 
 class Strip
 {
@@ -38,7 +39,7 @@ protected:
     unsigned int dataPin;
     unsigned int clockPin;
 
-    std::vector<Pixel *> pixels;
+    std::vector<ColourRGB> pixels;
 };
 
 #endif

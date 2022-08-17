@@ -8,13 +8,13 @@ Strip::Strip(unsigned int count, const unsigned int dataPin, const unsigned int 
 
     for (unsigned int pixel = 0; pixel < count; pixel++)
     {
-        pixels.push_back(new Pixel());
+        pixels.push_back({0, 0, 0});
     }
 }
 
 void Strip::setPixelColour(unsigned int pixel, ColourRGB colour)
 {
-    pixels.at(pixel)->setRGB(colour);
+    pixels.at(pixel) = colour;
 }
 
 void Strip::setAll(ColourRGB colour)
@@ -29,7 +29,7 @@ void Strip::render(ColourRGB *colours)
 {
     for (unsigned int pixel; pixel < pixels.size(); pixel++)
     {
-        colours[pixel] = pixels[pixel]->getRGB();
+        colours[pixel] = pixels[pixel];
     }
 }
 

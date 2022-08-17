@@ -21,6 +21,8 @@ void setup()
     Serial.begin(115200);
 
     bluetooth.begin(BLUETOOTH_NAME);
+
+    lights.setMelds(DEFAULT_MELDS);
 }
 
 void loop()
@@ -64,7 +66,7 @@ void loop()
         case '.':
             lights.setAll({0, 0, 0});
             lights.setVirtualPixel(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 255, 0});
-            // lights.setVirtualPixel(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 255, 0});
+            lights.setVirtualPixel(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 0, 255});
             lights.draw();
             break;
         default:
@@ -94,7 +96,7 @@ void handleMeld()
 
 void handleVirtualStrips()
 {
-    VirtualStrip virtualStrips[MAX_VIRTUAL_STRIPS];
+    VirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
     unsigned int stripCount = (contentSize - 1) / VIRTUAL_STRIP_SIZE;
 
     if ((contentSize - 1) % VIRTUAL_STRIP_SIZE)
