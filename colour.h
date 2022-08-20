@@ -3,19 +3,19 @@
 
 #include <stdint.h>
 
+typedef struct ColourRGBA
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    float alpha;
+};
+
 typedef struct ColourRGB
 {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
-} ColourRGB;
-
-typedef struct ColourRBGA
-{
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-    uint8_t alpha;
 };
 
 #endif

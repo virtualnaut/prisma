@@ -12,23 +12,26 @@ class VirtualStrip
 {
 public:
     VirtualStrip(unsigned int start, unsigned int end, bool isFractional);
-    std::vector<Pixel *> render();
+    std::vector<VirtualPixel *> render();
 
     unsigned int length();
 
+    void setMask(uint16_t value);
+
     void setPixelColour(unsigned int pixel, ColourRGB colour);
-    void setPixelColour(unsigned int pixel, ColourRBGA colour);
+    void setPixelColour(unsigned int pixel, ColourRGBA colour);
 
     void setAll(ColourRGB colour);
+    void setAll(ColourRGBA colour);
 
-    Pixel *getPixel(unsigned int pixel);
+    VirtualPixel *getPixel(unsigned int pixel);
 
     bool isFractional;
     unsigned int start;
     unsigned int end;
 
 protected:
-    std::vector<Pixel *> pixels;
+    std::vector<VirtualPixel *> pixels;
 };
 
 #endif

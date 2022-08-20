@@ -29,8 +29,9 @@ class Controller
 public:
     Controller(const StripConfiguration *strips, unsigned int count);
 
-    void setPixel(unsigned int pixel, ColourRGB colour);
     void setAll(ColourRGB colour);
+    void clearAll();
+    void mergePixel(unsigned int pixel, VirtualPixel *seconary);
     void draw();
 
     void setMelds(const bool melds[STRIP_COUNT]);
@@ -38,7 +39,9 @@ public:
 
     VirtualStripStatus setVirtualStrips(VirtualStripMessage strips[MAX_VIRTUAL_STRIPS], char count);
 
-    void setVirtualPixel(unsigned int strip, uint16_t value, ColourRGB colour);
+    VirtualStrip *getVirtualStrip(unsigned int strip);
+
+    void setMask(unsigned int strip, uint16_t value);
 
 protected:
     std::vector<Strip *> strips;

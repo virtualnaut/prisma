@@ -11,7 +11,7 @@ Controller::Controller(const StripConfiguration *strips, unsigned int count)
     }
 }
 
-void Controller::setPixel(unsigned int pixel, ColourRGB colour)
+void Controller::mergePixel(unsigned int pixel, VirtualPixel *seconary)
 {
     unsigned int covered = 0;
     for (unsigned int i = 0; i < strips.size(); i++)
@@ -20,11 +20,11 @@ void Controller::setPixel(unsigned int pixel, ColourRGB colour)
 
         if (pixel >= covered && pixel < covered + strip->count)
         {
-            strip->setPixelColour(
+            strip->mergePixel(
                 melds[i]
                     ? pixel - covered
                     : (strip->count - 1) - (pixel - covered),
-                colour);
+                seconary);
             break;
         }
         covered += strip->count;
@@ -44,6 +44,19 @@ void Controller::setAll(ColourRGB colour)
     }
 }
 
+void Controller::clearAll()
+{
+    for (unsigned int i = 0; i < strips.size(); i++)
+    {
+        strips[i]->setAll({0, 0, 0});
+    }
+
+    // for (unsigned int strip = 0; strip < virtualStrips.size(); strip++)
+    // {
+    //     virtualStrips[strip]->setAll({0, 0, 0, 0});
+    // }
+}
+
 void Controller::draw()
 {
     for (unsigned int strip = 0; strip < virtualStrips.size(); strip++)
@@ -53,11 +66,11 @@ void Controller::draw()
         {
             if (virtualStrip->start <= virtualStrip->end)
             {
-                setPixel(virtualStrip->start + relativePixel, virtualStrip->getPixel(relativePixel)->getRGB());
+                mergePixel(virtualStrip->start + relativePixel, virtualStrip->getPixel(relativePixel));
             }
             else
             {
-                setPixel(virtualStrip->start - relativePixel, virtualStrip->getPixel(relativePixel)->getRGB());
+                mergePixel(virtualStrip->start - relativePixel, virtualStrip->getPixel(relativePixel));
             }
         }
     }
@@ -80,6 +93,8 @@ void Controller::setOrder(const char order[STRIP_COUNT])
 
 VirtualStripStatus Controller::setVirtualStrips(VirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS], char count)
 {
+    this->virtualStrips.clear();
+
     // Make sure that none of the ranges goes outside the number of pixels we have.
     for (unsigned int virtualStrip = 0; virtualStrip < count; virtualStrip++)
     {
@@ -90,36 +105,18 @@ VirtualStripStatus Controller::setVirtualStrips(VirtualStripMessage virtualStrip
             return VirtualStripStatus::OutOfBounds;
         }
 
-        VirtualStrip *v = new VirtualStrip(strip.start, strip.end, strip.isFractional);
-
-        this->virtualStrips.push_back(v);
+        this->virtualStrips.push_back(new VirtualStrip(strip.start, strip.end, strip.isFractional));
     }
 
     return VirtualStripStatus::Valid;
 }
 
-void Controller::setVirtualPixel(unsigned int strip, uint16_t value, ColourRGB colour)
+VirtualStrip *Controller::getVirtualStrip(unsigned int strip)
 {
-    // VirtualStrip virtualStrip = virtualStrips[strip];
+    return virtualStrips[strip];
+}
 
-    // if (virtualStrip.isFractional)
-    // {
-    //     setPixel((int16_t)virtualStrip.start + (int16_t)(((int16_t)virtualStrip.end - (int16_t)virtualStrip.start) * ((double)value / 65535)), colour);
-    //     return;
-    // }
-
-    // setPixel(min(virtualStrip.start + value, virtualStrip.end), colour);
-
-    VirtualStrip *virtualStrip = virtualStrips[strip];
-
-    // TODO: Move this logic into `VirtualStrip`
-    if (virtualStrip->isFractional)
-    {
-        // virtualStrip->setPixelColour((int16_t)virtualStrip->start + (int16_t)(((int16_t)virtualStrip->end - (int16_t)virtualStrip->start) * ((double)value / 65535)), colour);
-        virtualStrip->setPixelColour(((uint16_t)virtualStrip->length() - 1) * ((double)value / 65535), colour);
-        return;
-    }
-
-    // virtualStrip->setPixelColour(min(virtualStrip->start + value, virtualStrip->end), colour);
-    virtualStrip->setPixelColour(value, colour);
+void Controller::setMask(unsigned int strip, uint16_t value)
+{
+    virtualStrips[strip]->setMask(value);
 }

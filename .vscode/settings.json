@@ -3,7 +3,8 @@
     "array": "cpp",
     "functional": "cpp",
     "algorithm": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "cstdlib": "cpp"
   },
   "rpc.enabled": true
 }

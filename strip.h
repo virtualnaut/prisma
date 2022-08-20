@@ -5,6 +5,7 @@
 #include <Arduino.h>
 
 #include "colour.h"
+#include "pixel.h"
 
 class Strip
 {
@@ -14,6 +15,8 @@ public:
     unsigned int count;
 
     void setPixelColour(unsigned int pixel, ColourRGB colour);
+    void mergePixel(unsigned int pixel, VirtualPixel *secondary);
+
     void setAll(ColourRGB colour);
     void render(ColourRGB *colours);
     void draw();
@@ -39,7 +42,7 @@ protected:
     unsigned int dataPin;
     unsigned int clockPin;
 
-    std::vector<ColourRGB> pixels;
+    std::vector<Pixel *> pixels;
 };
 
 #endif

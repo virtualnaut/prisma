@@ -58,15 +58,14 @@ void loop()
         case 'V':
             handleVirtualStrips();
             break;
-        case '_':
-            lights.setAll({0, 0, 0});
-            lights.setPixel(bluetoothBuffer[1], {255, 0, 0});
-            lights.draw();
-            break;
         case '.':
-            lights.setAll({0, 0, 0});
-            lights.setVirtualPixel(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 255, 0});
-            lights.setVirtualPixel(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2], {0, 0, 255});
+            lights.clearAll();
+            lights.setMask(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            lights.setMask(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            lights.setMask(2, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            lights.setMask(3, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            lights.setMask(4, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            lights.setMask(5, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
             lights.draw();
             break;
         default:
@@ -129,5 +128,10 @@ void handleVirtualStrips()
         break;
     default:
         Serial.println("Successfully set the virtual strips");
+    }
+
+    for (unsigned int strip = 0; strip < stripCount; strip++)
+    {
+        lights.getVirtualStrip(strip)->setAll({255, 255, 255, 0.5});
     }
 }
