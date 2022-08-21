@@ -94,3 +94,33 @@ The first strip is accessed using the absolute absolute pixel index and the seco
 ---
 
 </details>
+
+### Strip Mask
+The strip mask command sets the mask value for a number of virtual strip.
+
+| Byte | Description                                    |
+| ---- | ---------------------------------------------- |
+| 0    | Uppercase 'B'                                  |
+| ...  | A number of strip mask definitions (see below) |
+
+#### Strip Mask Definition
+
+| Byte | Description                                             |
+| ---- | ------------------------------------------------------- |
+| 0    | Index of the strip to set the mask for                  |
+| 1,2  | Value to set the mask to (2-byte, BE, unsigned integer) |
+
+<details>
+<summary>Example</summary>
+
+---
+
+`01000010 || 00000000 || 00100000 00111100 || 00000001 || 00000000 00000100`
+
+`'B' 0 8252 1 4`
+
+This message sets the mask for two strips. The first is set to a value of 8252 (assuming this strip has `isFractional` set, this is equivalent to 0.126...). The second strip has a mask of 4.
+
+---
+
+</details>

@@ -8,6 +8,7 @@
 
 #define HEADER_SIZE 3
 #define VIRTUAL_STRIP_SIZE 5
+#define MASK_SIZE 3
 
 BluetoothSerial bluetooth;
 
@@ -57,6 +58,9 @@ void loop()
             break;
         case 'V':
             handleVirtualStrips();
+            break;
+        case 'B':
+            handleMask();
             break;
         case '.':
             lights.clearAll();
@@ -134,4 +138,26 @@ void handleVirtualStrips()
     {
         lights.getVirtualStrip(strip)->setAll({255, 255, 255, 0.5});
     }
+}
+
+void handleMask()
+{
+    unsigned int maskCount = (contentSize - 1) / MASK_SIZE;
+
+    if ((contentSize - 1) % MASK_SIZE)
+    {
+        // Invalid message!
+        Serial.println("Invalid strip mask message");
+        return;
+    }
+
+    lights.clearAll();
+
+    for (unsigned int mask = 0; mask < maskCount; mask++)
+    {
+        lights.setMask(
+            bluetoothBuffer[(mask * MASK_SIZE) + 1],
+            (uint16_t)((bluetoothBuffer[(mask * MASK_SIZE) + 2] << 8) + (bluetoothBuffer[(mask * MASK_SIZE) + 3])));
+    }
+    lights.draw();
 }

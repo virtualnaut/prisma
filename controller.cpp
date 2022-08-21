@@ -118,5 +118,10 @@ VirtualStrip *Controller::getVirtualStrip(unsigned int strip)
 
 void Controller::setMask(unsigned int strip, uint16_t value)
 {
+    if (strip >= virtualStrips.size())
+    {
+        Serial.println("Cannot set the mask for an undefined virtual strip");
+        return;
+    }
     virtualStrips[strip]->setMask(value);
 }
