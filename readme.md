@@ -124,3 +124,7 @@ This message sets the mask for two strips. The first is set to a value of 8252 (
 ---
 
 </details>
+
+### Strip Fill
+
+`'F' 'c' 0 50 255 0 255 128 'b' 51 100 255 0 255 128 255 0 0 0`
