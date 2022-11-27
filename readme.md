@@ -34,7 +34,7 @@ The meld command is used to redefine how the LED strips are connected. For examp
 
 ---
 
-`01001101 || 00000000 || 00000001 || 000000002 || 10100000`
+`01001101 || 00000000 || 00000001 || 00000010 || 10100000`
 
 Assuming this is a board with 3 strips connected, this command will set the lights up like so:
     - The ordering is unchanged, then
@@ -51,7 +51,7 @@ Assuming this is a board with 3 strips connected, this command will set the ligh
 
 ---
 
-`01001101 || 00000000 || 00000002 || 000000001 || 10100000`
+`01001101 || 00000000 || 00000010 || 000000001 || 10100000`
 
 In this example, the order of the second and third strips have been swapped, so that the first strip connects to the second and the second to the third. So, in full:
     - Start at the physical start of the first strip
@@ -96,7 +96,7 @@ The first strip is accessed using the absolute absolute pixel index and the seco
 </details>
 
 ### Strip Mask
-The strip mask command sets the mask value for a number of virtual strip.
+The strip mask command sets the mask value for a number of virtual strip. The mask represents how much of the virtual strip should be visible.
 
 | Byte | Description                                    |
 | ---- | ---------------------------------------------- |
@@ -126,5 +126,70 @@ This message sets the mask for two strips. The first is set to a value of 8252 (
 </details>
 
 ### Strip Fill
+The strip fill command is used to define the colour of a range of pixels. This command has a number of sub commands that can be used to specify what method to use to fill the strip
 
-`'F' 'c' 0 50 255 0 255 128 'b' 51 100 255 0 255 128 255 0 0 0`
+The generic form of the strip fill command is:
+
+| Byte | Description                                                       |
+| ---- | ----------------------------------------------------------------- |
+| 0    | Uppercase 'F'                                                     |
+| 1    | Index of the virtual strip we are changing the colour of          |
+| 2    | Subcommand character (see below)                                  |
+| ...  | Subcommand arguments (specific to which subcommand is being used) |
+
+
+#### Single Colour Subcommand
+The single colour subcommand sets a range of pixels within a virtual strip to a single colour.
+
+The character for this subcommand is a lowercase `c`.
+
+The arguments are as follows (offsets are relative):
+| Byte    | Description                          |
+| ------- | ------------------------------------ |
+| 0       | Start pixel within the virtual strip |
+| 1       | End pixel within the virtual strip   |
+| 2,3,4,5 | Red, green, blue and alpha channels  |
+
+<details>
+<summary>Example</summary>
+
+---
+
+`01000110 || 00000001 || 01100011 || 00000000 || 00110010 || 11111111 || 00000000 || 11111111 || 10000000`
+
+`'F' 1 'c' 0 50 255 0 255 128 `
+
+On virtual strip 1, for pixels 0 to 50 (inclusive), set the colour to RGBA(255, 0, 255, 0.5).
+
+---
+
+</details>
+
+#### Blend Subcommand
+The blend subcommand takes two colours and creates a linear gradient between the start and end pixels.
+
+The character for this subcommand is a lowercase `b`.
+
+The arguments are as follows (offsets are relative):
+| Byte    | Description                                             |
+| ------- | ------------------------------------------------------- |
+| 0       | Start pixel within the virtual strip                    |
+| 1       | End pixel within the virtual strip                      |
+| 2,3,4,5 | Red, green, blue and alpha channels for the start pixel |
+| 6,7,8,9 | Red, green, blue and alpha channels  for the end pixel  |
+
+
+<details>
+<summary>Example</summary>
+
+---
+
+`01000110 || 00000000 || 01100010 || 00110011 || 01100100 || 11111111 || 00000000 || 11111111 || 10000000 || 11111111 || 00000000 || 00000000 || 00000000`
+
+`'F' 0 'b' 51 100 255 0 255 128 255 0 0 0`
+
+On virtual strip 1, for pixels 51 to 100, set the start colour to RGBA(255, 0, 255, 0.5) and blend to the end pixel with a colour of RGBA(255, 0, 0, 0).
+
+---
+
+</details>
