@@ -1,15 +1,21 @@
+#ifndef SETUP_H
+#define SETUP_H
+
 #include "configTemplates.h"
 
 #define BLUETOOTH_NAME "prismaDEVICE"
-#define BLUETOOH_BUFFER_SIZE 256
+#define BLUETOOTH_BUFFER_SIZE 256
 #define STRIP_COUNT 2
+#define LED_CHIP LEDChip::APA102
 
 const StripConfiguration STRIPS[STRIP_COUNT] = {
-    {23,
-     22,
-     118},
     {14,
-     12,
+     13,
+     118},
+    {33,
+     32,
      117}};
 
-bool DEFAULT_MELDS[STRIP_COUNT] = {true, false};
+const bool DEFAULT_MELDS[STRIP_COUNT] = {true, false};
+
+#endif

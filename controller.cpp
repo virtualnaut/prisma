@@ -5,7 +5,7 @@ Controller::Controller(const StripConfiguration *strips, unsigned int count)
     for (unsigned int i = 0; i < count; i++)
     {
         StripConfiguration config = strips[i];
-        this->strips.push_back(new Strip(config.count, config.dataPin, config.clockPin));
+        this->strips.push_back(new Strip(config.count, config.dataPin, config.clockPin, LED_CHIP));
         this->pixelCount += config.count;
         this->order[i] = i;
     }
