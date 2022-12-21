@@ -10,9 +10,12 @@
 #define VIRTUAL_STRIP_SIZE 5
 #define MASK_SIZE 3
 
+#define FILL_COLOUR_SIZE 9
+#define FILL_BLEND_SIZE 13
+
 BluetoothSerial bluetooth;
 
-char bluetoothBuffer[BLUETOOTH_BUFFER_SIZE];
+uint8_t bluetoothBuffer[BLUETOOTH_BUFFER_SIZE];
 uint16_t contentSize = 0;
 
 Controller lights = Controller(STRIPS, STRIP_COUNT);
@@ -62,14 +65,17 @@ void loop()
         case 'B':
             handleMask();
             break;
+        case 'F':
+            handleFill();
+            break;
         case '.':
             lights.clearAll();
             lights.setMask(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            lights.setMask(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            lights.setMask(2, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            lights.setMask(3, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            lights.setMask(4, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            lights.setMask(5, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            // lights.setMask(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            // lights.setMask(2, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            // lights.setMask(3, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            // lights.setMask(4, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+            // lights.setMask(5, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
             lights.draw();
             break;
         default:
@@ -113,9 +119,8 @@ void handleVirtualStrips()
     {
         virtualStrips[strip] = {
             (bool)bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE + 1)],
-            (unsigned int)((bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 2]) << 8) + (unsigned int)(bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 3]),
-            (unsigned int)((bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 4]) << 8) + (unsigned int)(bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE) + 5]),
-        };
+            parseUInt16(bluetoothBuffer, (strip * VIRTUAL_STRIP_SIZE) + 2),
+            parseUInt16(bluetoothBuffer, (strip * VIRTUAL_STRIP_SIZE) + 4)};
     }
 
     VirtualStripStatus error = lights.setVirtualStrips(virtualStrips, stripCount);
@@ -157,7 +162,78 @@ void handleMask()
     {
         lights.setMask(
             bluetoothBuffer[(mask * MASK_SIZE) + 1],
-            (uint16_t)((bluetoothBuffer[(mask * MASK_SIZE) + 2] << 8) + (bluetoothBuffer[(mask * MASK_SIZE) + 3])));
+            parseUInt16(bluetoothBuffer, (mask * MASK_SIZE) + 2));
+        // (uint16_t)((bluetoothBuffer[(mask * MASK_SIZE) + 2] << 8) + (bluetoothBuffer[(mask * MASK_SIZE) + 3])));
     }
     lights.draw();
+}
+
+void handleFill()
+{
+    unsigned int cursor = 2;
+
+    unsigned int strip = bluetoothBuffer[1];
+
+    while (cursor < contentSize)
+    {
+        switch (bluetoothBuffer[cursor])
+        {
+        case 'c':
+            cursor = handleFillColour(strip, cursor);
+            break;
+        case 'b':
+            cursor = handleFillBlend(strip, cursor);
+            break;
+        default:
+            Serial.println("Invalid strip fill definition");
+            return;
+        }
+    }
+
+    Serial.println("Successfully set strip fill");
+}
+
+unsigned int handleFillColour(unsigned int strip, unsigned int cursor)
+{
+    lights.getVirtualStrip(strip)->applyColourRange(
+        parseUInt16(bluetoothBuffer, cursor + 1),
+        parseUInt16(bluetoothBuffer, cursor + 3),
+        parseRGBA(bluetoothBuffer, cursor + 5));
+    // {bluetoothBuffer[cursor + 5],
+    //  bluetoothBuffer[cursor + 6],
+    //  bluetoothBuffer[cursor + 7],
+    //  (float)bluetoothBuffer[cursor + 8] / 255});
+    return cursor + FILL_COLOUR_SIZE;
+}
+
+unsigned int handleFillBlend(unsigned int strip, unsigned int cursor)
+{
+    lights.getVirtualStrip(strip)->applyBlendRange(
+        parseUInt16(bluetoothBuffer, cursor + 1),
+        parseUInt16(bluetoothBuffer, cursor + 3),
+        parseRGBA(bluetoothBuffer, cursor + 5),
+        parseRGBA(bluetoothBuffer, cursor + 9));
+    // {bluetoothBuffer[cursor + 5],
+    //  bluetoothBuffer[cursor + 6],
+    //  bluetoothBuffer[cursor + 7],
+    //  (float)bluetoothBuffer[cursor + 8] / 255},
+    // {bluetoothBuffer[cursor + 9],
+    //  bluetoothBuffer[cursor + 10],
+    //  bluetoothBuffer[cursor + 11],
+    //  (float)bluetoothBuffer[cursor + 12] / 255});
+    return cursor + FILL_BLEND_SIZE;
+}
+
+uint16_t parseUInt16(uint8_t *buffer, unsigned int offset)
+{
+    return (buffer[offset] << 8) + (buffer[offset + 1]);
+}
+
+ColourRGBA parseRGBA(uint8_t *buffer, unsigned int offset)
+{
+    return {
+        buffer[offset],
+        buffer[offset + 1],
+        buffer[offset + 2],
+        (float)buffer[offset + 3] / 255};
 }

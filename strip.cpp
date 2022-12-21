@@ -1,10 +1,12 @@
 #include "strip.h"
 
-Strip::Strip(unsigned int count, const unsigned int dataPin, const unsigned int clockPin)
+Strip::Strip(unsigned int count, const unsigned int dataPin, const unsigned int clockPin, LEDChip ledType)
 {
     this->count = count;
     this->dataPin = dataPin;
     this->clockPin = clockPin;
+
+    this->driver = DriverFactory::create(count, dataPin, clockPin, ledType);
 
     for (unsigned int pixel = 0; pixel < count; pixel++)
     {
@@ -42,68 +44,5 @@ void Strip::draw()
 {
     ColourRGB colours[count];
     render(colours);
-
-    initialisePins();
-    startFrame();
-
-    for (unsigned int colour = 0; colour < count; colour++)
-    {
-        sendPixel(colours[colour]);
-    }
-
-    endFrame();
-
-    // Do the APA102 stuff here...
-}
-
-void Strip::initialisePins()
-{
-    pinMode(dataPin, OUTPUT);
-    digitalWrite(dataPin, LOW);
-    pinMode(clockPin, OUTPUT);
-    digitalWrite(clockPin, LOW);
-}
-
-void Strip::startFrame()
-{
-    sendBlanks(4);
-}
-
-void Strip::endFrame()
-{
-    sendBlanks((count + 14) / 16);
-}
-
-void Strip::sendBit(uint8_t bit)
-{
-    digitalWrite(dataPin, bit);
-    digitalWrite(clockPin, HIGH);
-    digitalWrite(clockPin, LOW);
-}
-
-void Strip::sendBlanks(unsigned int n)
-{
-    for (unsigned int byte = 0; byte < n; byte++)
-    {
-        for (unsigned int bit = 0; bit < 8; bit++)
-        {
-            sendBit(LOW);
-        }
-    }
-}
-
-void Strip::sendValue(uint8_t value)
-{
-    for (int bit = 7; bit >= 0; bit--)
-    {
-        sendBit(value >> bit & 1);
-    }
-}
-
-void Strip::sendPixel(ColourRGB colour)
-{
-    sendValue(0b11100000 | 12);
-    sendValue(colour.blue);
-    sendValue(colour.green);
-    sendValue(colour.red);
+    this->driver->draw(colours);
 }

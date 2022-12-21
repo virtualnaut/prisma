@@ -1,5 +1,7 @@
 #include "pixel.h"
 
+#include "Arduino.h"
+
 Pixel::Pixel()
 {
 }

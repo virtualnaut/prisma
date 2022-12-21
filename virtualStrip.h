@@ -26,6 +26,9 @@ public:
 
     VirtualPixel *getPixel(unsigned int pixel);
 
+    void applyColourRange(unsigned int start, unsigned int end, ColourRGBA colour);
+    void applyBlendRange(unsigned int start, unsigned int end, ColourRGBA colourStart, ColourRGBA colourEnd);
+
     bool isFractional;
     unsigned int start;
     unsigned int end;
