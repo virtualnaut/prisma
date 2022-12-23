@@ -11,7 +11,7 @@ Controller::Controller(const StripConfiguration *strips, unsigned int count)
     }
 }
 
-void Controller::mergePixel(unsigned int pixel, VirtualPixel *seconary)
+void Controller::mergePixel(unsigned int pixel, VirtualPixel *secondary)
 {
     unsigned int covered = 0;
     for (unsigned int i = 0; i < strips.size(); i++)
@@ -24,7 +24,7 @@ void Controller::mergePixel(unsigned int pixel, VirtualPixel *seconary)
                 melds[i]
                     ? pixel - covered
                     : (strip->count - 1) - (pixel - covered),
-                seconary);
+                secondary);
             break;
         }
         covered += strip->count;
@@ -59,6 +59,19 @@ void Controller::clearAll()
 
 void Controller::draw()
 {
+    switch (mode)
+    {
+    case ControllerMode::SingleMode:
+        this->drawForSingleStrip();
+        break;
+    case ControllerMode::MatrixMode:
+        this->drawForMatrix();
+        break;
+    }
+}
+
+void Controller::drawForSingleStrip()
+{
     for (unsigned int strip = 0; strip < virtualStrips.size(); strip++)
     {
         VirtualStrip *virtualStrip = virtualStrips[strip];
@@ -73,6 +86,19 @@ void Controller::draw()
                 mergePixel(virtualStrip->start - relativePixel, virtualStrip->getPixel(relativePixel));
             }
         }
+    }
+
+    for (unsigned int i = 0; i < strips.size(); i++)
+    {
+        strips[i]->draw();
+    }
+}
+
+void Controller::drawForMatrix()
+{
+    for (unsigned int pixel = 0; pixel < matrix->length; pixel++)
+    {
+        mergePixel(pixel, matrix->getPixel(pixel));
     }
 
     for (unsigned int i = 0; i < strips.size(); i++)
@@ -108,12 +134,18 @@ VirtualStripStatus Controller::setVirtualStrips(VirtualStripMessage virtualStrip
         this->virtualStrips.push_back(new VirtualStrip(strip.start, strip.end, strip.isFractional));
     }
 
+    this->mode = ControllerMode::SingleMode;
     return VirtualStripStatus::Valid;
 }
 
 VirtualStrip *Controller::getVirtualStrip(unsigned int strip)
 {
     return virtualStrips[strip];
+}
+
+Matrix *Controller::getMatrix()
+{
+    return matrix;
 }
 
 void Controller::setMask(unsigned int strip, uint16_t value)
@@ -124,4 +156,10 @@ void Controller::setMask(unsigned int strip, uint16_t value)
         return;
     }
     virtualStrips[strip]->setMask(value);
+}
+
+void Controller::initialiseMatrix(unsigned int width, unsigned int height)
+{
+    mode = ControllerMode::MatrixMode;
+    matrix = new Matrix(width, height);
 }

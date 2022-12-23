@@ -193,3 +193,7 @@ On virtual strip 1, for pixels 51 to 100, set the start colour to RGBA(255, 0, 2
 ---
 
 </details>
+
+### Matrix Setup
+
+'X' width height

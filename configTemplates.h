@@ -1,7 +1,7 @@
 #ifndef CONFIG_TEMPLATES_H
 #define CONFIG_TEMPLATES_H
 
-#include "Freenove_WS2812_Lib_for_ESP32.h"
+#include <NeoPixelBus.h>
 
 typedef struct StripConfiguration
 {
