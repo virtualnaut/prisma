@@ -13,10 +13,17 @@
 #define FILL_COLOUR_SIZE 9
 #define FILL_BLEND_SIZE 13
 
+#define MAX_MESSAGE_SIZE 512
+
 BluetoothSerial bluetooth;
 
 uint8_t bluetoothBuffer[BLUETOOTH_BUFFER_SIZE];
 uint16_t contentSize = 0;
+
+bool waitingForSegments = false;
+unsigned int segmentCount = 0;
+unsigned int segmentsReceived = 0;
+unsigned int lastSegmentTime = 0;
 
 Controller lights = Controller(STRIPS, STRIP_COUNT);
 
@@ -31,58 +38,105 @@ void setup()
 
 void loop()
 {
+
     if (bluetooth.available())
     {
-        // bluetooth.readBytesUntil(0, bluetoothBuffer, 256);
-
-        // Ignore everything up to the first hash character.
-        bluetooth.readBytesUntil('#', bluetoothBuffer, BLUETOOTH_BUFFER_SIZE);
-
-        if (!bluetooth.available())
+        if (!waitingForSegments || (millis() - lastSegmentTime > BLUETOOTH_SPLIT_MESSAGE_WAIT))
         {
-            // There was no hash character in the message.
-            return;
+            // Ignore everything up to the first hash character.
+            bluetooth.readBytesUntil('#', bluetoothBuffer, BLUETOOTH_BUFFER_SIZE);
+
+            if (!bluetooth.available())
+            {
+                // There was no hash character in the message.
+                return;
+            }
+
+            // Read the size.
+            char sizeBuffer[2];
+            bluetooth.readBytes(sizeBuffer, 2);
+
+            contentSize = ((sizeBuffer[0] << 8) + sizeBuffer[1]) - HEADER_SIZE;
+
+            segmentCount = (int)contentSize / MAX_MESSAGE_SIZE;
+
+            if (segmentCount > 0)
+            {
+                bluetooth.readBytes(bluetoothBuffer, MAX_MESSAGE_SIZE);
+                segmentsReceived = 1;
+                lastSegmentTime = millis();
+                waitingForSegments = true;
+            }
+            else
+            {
+                bluetooth.readBytes(bluetoothBuffer, contentSize);
+                waitingForSegments = false;
+                processBuffer();
+            }
         }
-
-        // Read the size.
-        char sizeBuffer[2];
-        bluetooth.readBytes(sizeBuffer, 2);
-
-        contentSize = ((sizeBuffer[0] << 8) + sizeBuffer[1]) - HEADER_SIZE;
-
-        // Read the actual message.
-        bluetooth.readBytes(bluetoothBuffer, contentSize);
-
-        // Decide what to do based on the first byte.
-        switch (bluetoothBuffer[0])
+        else
         {
-        case 'M':
-            handleMeld();
-            break;
-        case 'V':
-            handleVirtualStrips();
-            break;
-        case 'B':
-            handleMask();
-            break;
-        case 'F':
-            handleFill();
-            break;
-        case '.':
-            lights.clearAll();
-            lights.setMask(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            // lights.setMask(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            // lights.setMask(2, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            // lights.setMask(3, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            // lights.setMask(4, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            // lights.setMask(5, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-            lights.draw();
-            break;
-        default:
-            Serial.println("Invalid message");
+            if (segmentsReceived == segmentCount)
+            {
+                bluetooth.readBytes(
+                    bluetoothBuffer + segmentsReceived * MAX_MESSAGE_SIZE,
+                    contentSize % MAX_MESSAGE_SIZE);
+                waitingForSegments = false;
+                processBuffer();
+            }
+            else
+            {
+                bluetooth.readBytes(
+                    bluetoothBuffer + segmentsReceived * MAX_MESSAGE_SIZE,
+                    MAX_MESSAGE_SIZE);
+            }
+            segmentsReceived++;
         }
     }
     delay(5);
+}
+
+void processBuffer()
+{
+    // Decide what to do based on the first byte.
+    switch (bluetoothBuffer[0])
+    {
+    case 'M':
+        handleMeld();
+        break;
+    case 'V':
+        handleVirtualStrips();
+        break;
+    case 'B':
+        handleMask();
+        break;
+    case 'F':
+        handleFill();
+        break;
+    case 'X':
+        handleMatrix();
+        break;
+    case 'R':
+        handleRegion();
+        break;
+    case '.':
+        lights.clearAll();
+        lights.setMask(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        // lights.setMask(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        // lights.setMask(2, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        // lights.setMask(3, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        // lights.setMask(4, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        // lights.setMask(5, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        lights.draw();
+        break;
+    case ',':
+        lights.getMatrix()->setPixel(bluetoothBuffer[1], bluetoothBuffer[2], parseRGBA(bluetoothBuffer, 3));
+        lights.draw();
+        break;
+
+    default:
+        Serial.println("Invalid message");
+    }
 }
 
 /**
@@ -193,16 +247,45 @@ void handleFill()
     Serial.println("Successfully set strip fill");
 }
 
+void handleMatrix()
+{
+    lights.initialiseMatrix(bluetoothBuffer[1], bluetoothBuffer[2]);
+    Matrix *matrix = lights.getMatrix();
+
+    matrix->setHorizontalFlip(bluetoothBuffer[3]);
+    matrix->setVerticalFlip(bluetoothBuffer[4]);
+
+    Serial.println("Device has entered matrix mode");
+}
+
+void handleRegion()
+{
+    unsigned int count = bluetoothBuffer[3] * bluetoothBuffer[4];
+    ColourRGBA colours[count];
+
+    unsigned int cursor = 5;
+    unsigned int pixel = 0;
+
+    while (cursor < contentSize)
+    {
+        colours[pixel] = parseRGBA(bluetoothBuffer, cursor);
+        cursor += 4;
+        pixel++;
+    }
+
+    lights.clearAll();
+
+    lights.getMatrix()
+        ->setRegion(bluetoothBuffer[1], bluetoothBuffer[2], bluetoothBuffer[3], bluetoothBuffer[4], colours);
+    lights.draw();
+}
+
 unsigned int handleFillColour(unsigned int strip, unsigned int cursor)
 {
     lights.getVirtualStrip(strip)->applyColourRange(
         parseUInt16(bluetoothBuffer, cursor + 1),
         parseUInt16(bluetoothBuffer, cursor + 3),
         parseRGBA(bluetoothBuffer, cursor + 5));
-    // {bluetoothBuffer[cursor + 5],
-    //  bluetoothBuffer[cursor + 6],
-    //  bluetoothBuffer[cursor + 7],
-    //  (float)bluetoothBuffer[cursor + 8] / 255});
     return cursor + FILL_COLOUR_SIZE;
 }
 
@@ -213,14 +296,6 @@ unsigned int handleFillBlend(unsigned int strip, unsigned int cursor)
         parseUInt16(bluetoothBuffer, cursor + 3),
         parseRGBA(bluetoothBuffer, cursor + 5),
         parseRGBA(bluetoothBuffer, cursor + 9));
-    // {bluetoothBuffer[cursor + 5],
-    //  bluetoothBuffer[cursor + 6],
-    //  bluetoothBuffer[cursor + 7],
-    //  (float)bluetoothBuffer[cursor + 8] / 255},
-    // {bluetoothBuffer[cursor + 9],
-    //  bluetoothBuffer[cursor + 10],
-    //  bluetoothBuffer[cursor + 11],
-    //  (float)bluetoothBuffer[cursor + 12] / 255});
     return cursor + FILL_BLEND_SIZE;
 }
 
