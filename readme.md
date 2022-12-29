@@ -5,19 +5,31 @@
 ## Configuration
 Configuration is stored in a file named `/setup.h`. The options are as follows:
 
-| Name                    | Description                                                                                             |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| `BLUETOOTH_NAME`        | The bluetooth name of the device                                                                        |
-| `BLUETOOTH_BUFFER_SIZE` | The size of the bluetooth buffer                                                                        |
-| `STRIP_COUNT`           | The number of physical strips connected to the board                                                    |
-| `STRIPS`                | An array of structures defining the pins and count of LEDs for each strip: `{dataPin, clockPin, count}` |
-| `DEFAULT_MELDS`         | The meld settings on startup, array of bools (see documentation for the meld command for more info)     |
-
 Before uploading `prisma` to a board, set your config in `/setup.h.example` and rename it to `/setup.h`.
+
+| Name                           | Description                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `BLUETOOTH_NAME`               | The bluetooth name of the device                                                                        |
+| `BLUETOOTH_BUFFER_SIZE`        | The size of the bluetooth buffer                                                                        |
+| `BLUETOOTH_SPLIT_MESSAGE_WAIT` | Time to wait between receiving segments of the same command                                             |
+| `STRIP_COUNT`                  | The number of physical strips connected to the board                                                    |
+| `LED_CHIP`                     | The type of the LEDs (use a member of `LEDChip` enum)                                                   |
+| `STRIPS`                       | An array of structures defining the pins and count of LEDs for each strip: `{dataPin, clockPin, count}` |
+| `DEFAULT_MELDS`                | The meld settings on startup, array of bools (see documentation for the meld command for more info)     |
+
+
+### LED Type Specific Configuration
+For some LED types, specific config options are needed.
+| Name                       | Type    | Description                           |
+| -------------------------- | ------- | ------------------------------------- |
+| `NEO_PIXEL_COLOUR_FEATURE` | WS2812B | Defines the colour order for the LEDs |
+| `NEO_PIXEL_METHOD`         | WS2812B | Defines how the pixels are updated    |
 
 ## Commands
 
-All commands begin with a hash `#` followed by 2 bytes (big endian unsigned int) storing the size of the entire message (including this header). These have been omitted in all documentation below for brevity, and all offsets stated are relative to the start of the message itself, not including the header. 
+All commands begin with a hash `#` followed by 2 bytes (big endian unsigned int) storing the size of the entire message (including this header). These have been omitted in all documentation below for brevity, and all offsets stated are relative to the start of the message itself, not including the header.
+
+The maximum size of a bluetooth message is 512 B. If a command takes up more than this size, it should be split into multiple messages/segments. The `prisma` device will read the size of the command from the header and wait for the rest of the command. The amount of time `prisma` waits for subseqent messages is configurable via `BLUETOOTH_SPLIT_MESSAGE_WAIT`.
 
 ### Meld
 The meld command is used to redefine how the LED strips are connected. For example:
@@ -193,3 +205,25 @@ On virtual strip 1, for pixels 51 to 100, set the start colour to RGBA(255, 0, 2
 ---
 
 </details>
+
+### Matrix Setup
+The matrix setup command defines the device as a matrix and allows specification of the properties of the matrix.
+
+| Byte | Description                             |
+| ---- | --------------------------------------- |
+| 0    | Uppercase 'X'                           |
+| 1    | Width of the matrix                     |
+| 2    | Height of the matrix                    |
+| 3    | Whether to flip the matrix horizontally |
+| 4    | Whether to flip the matrix vertically   |
+
+### Matrix Region
+Update a region of the display with new data.
+| Byte | Description                                |
+| ---- | ------------------------------------------ |
+| 0    | Uppercase 'R'                              |
+| 1    | X-coordinate of the top left of the region |
+| 2    | Y-coordinate of the top left of the region |
+| 3    | Width of the region                        |
+| 4    | Height of the region                       |
+| ...  | List of 4-byte RGBA colours (1 per pixel)  |

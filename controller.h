@@ -3,11 +3,13 @@
 
 #include <vector>
 #include <algorithm>
+
 #include "strip.h"
 #include "configTemplates.h"
 #include "colour.h"
 #include "setup.h"
 #include "virtualStrip.h"
+#include "matrix.h"
 
 #define MAX_VIRTUAL_STRIPS 256
 
@@ -24,6 +26,12 @@ enum VirtualStripStatus
     OutOfBounds // One or more virtual strips include pixels that don't exist.
 };
 
+enum ControllerMode
+{
+    SingleMode,
+    MatrixMode,
+};
+
 class Controller
 {
 public:
@@ -31,7 +39,8 @@ public:
 
     void setAll(ColourRGB colour);
     void clearAll();
-    void mergePixel(unsigned int pixel, VirtualPixel *seconary);
+    void mergePixel(unsigned int pixel, VirtualPixel *secondary);
+
     void draw();
 
     void setMelds(const bool melds[STRIP_COUNT]);
@@ -41,9 +50,17 @@ public:
 
     VirtualStrip *getVirtualStrip(unsigned int strip);
 
+    Matrix *getMatrix();
+
     void setMask(unsigned int strip, uint16_t value);
 
+    void initialiseMatrix(unsigned int width, unsigned int height);
+
 protected:
+    void drawForSingleStrip();
+    void drawForMatrix();
+
+    ControllerMode mode;
     std::vector<Strip *> strips;
     unsigned int pixelCount = 0;
 
@@ -51,6 +68,8 @@ protected:
 
     bool melds[STRIP_COUNT];
     char order[STRIP_COUNT];
+
+    Matrix *matrix;
 };
 
 #endif

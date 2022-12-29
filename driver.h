@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "Freenove_WS2812_Lib_for_ESP32.h"
+#include <NeoPixelBus.h>
 
 #include "setup.h"
 #include "configTemplates.h"
@@ -71,7 +71,7 @@ public:
     void draw(ColourRGB *colours);
 
 protected:
-    Freenove_ESP32_WS2812 driverStrip;
+    NeoPixelBus<NEO_PIXEL_COLOUR_FEATURE, NEO_PIXEL_METHOD> *driverStrip;
 };
 
 #endif

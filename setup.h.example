@@ -5,8 +5,13 @@
 
 #define BLUETOOTH_NAME "prismaDEVICE"
 #define BLUETOOTH_BUFFER_SIZE 256
+#define BLUETOOTH_SPLIT_MESSAGE_WAIT 500
+
 #define STRIP_COUNT 2
 #define LED_CHIP LEDChip::APA102
+
+#define NEO_PIXEL_COLOUR_FEATURE NeoGrbFeature
+#define NEO_PIXEL_METHOD Neo800KbpsMethod
 
 const StripConfiguration STRIPS[STRIP_COUNT] = {
     {14,

@@ -85,9 +85,9 @@ void APA102Driver::sendPixel(ColourRGB colour)
 
 WS2812BDriver::WS2812BDriver(unsigned int count, unsigned int dataPin, unsigned int clockPin) : Driver(count, dataPin, clockPin)
 {
-    this->driverStrip = Freenove_ESP32_WS2812(count, dataPin, 0, WS_LED_TYPE);
-    this->driverStrip.begin();
-    this->driverStrip.setBrightness(20);
+    driverStrip = new NeoPixelBus<NEO_PIXEL_COLOUR_FEATURE, NEO_PIXEL_METHOD>(count, dataPin);
+    driverStrip->Begin();
+    driverStrip->Show();
 }
 
 void WS2812BDriver::draw(ColourRGB *colours)
@@ -95,8 +95,8 @@ void WS2812BDriver::draw(ColourRGB *colours)
     for (unsigned int pixel = 0; pixel < count; pixel++)
     {
         ColourRGB colour = colours[pixel];
-        uint32_t hexColour = (uint32_t)(colour.red << 16) + (uint32_t)(colour.green << 8) + colour.blue;
-        this->driverStrip.setLedColorData(pixel, hexColour);
+        RgbColor c(colour.red, colour.green, colour.blue);
+        driverStrip->SetPixelColor(pixel, c);
     }
-    this->driverStrip.show();
+    driverStrip->Show();
 }

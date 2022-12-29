@@ -4,7 +4,13 @@
     "functional": "cpp",
     "algorithm": "cpp",
     "vector": "cpp",
-    "cstdlib": "cpp"
+    "cstdlib": "cpp",
+    "*.tcc": "cpp",
+    "string": "cpp",
+    "ostream": "cpp",
+    "sstream": "cpp",
+    "utility": "cpp",
+    "new": "cpp"
   },
   "rpc.enabled": true
 }
