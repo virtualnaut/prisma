@@ -8,13 +8,19 @@
 #include "colour.h"
 #include "pixel.h"
 
+typedef struct MatrixStripComponent
+{
+    unsigned int x;
+    unsigned int y;
+    VirtualPixel *pixel;
+} MatrixStripComponent;
+
 class VirtualStrip
 {
 public:
-    VirtualStrip(unsigned int start, unsigned int end, bool isFractional);
-    std::vector<VirtualPixel *> render();
+    VirtualStrip(bool isFractional);
 
-    unsigned int length();
+    virtual unsigned int length() = 0;
 
     void setMask(uint16_t value);
 
@@ -30,11 +36,36 @@ public:
     void applyBlendRange(unsigned int start, unsigned int end, ColourRGBA colourStart, ColourRGBA colourEnd);
 
     bool isFractional;
+
+protected:
+    std::vector<VirtualPixel *> pixels;
+};
+
+class LinearVirtualStrip : public virtual VirtualStrip
+{
+public:
+    LinearVirtualStrip(unsigned int start, unsigned int end, bool isFractional);
+    unsigned int length();
     unsigned int start;
     unsigned int end;
 
 protected:
-    std::vector<VirtualPixel *> pixels;
+};
+
+class MatrixVirtualStrip : public virtual VirtualStrip
+{
+public:
+    MatrixVirtualStrip(unsigned int x, unsigned int y, unsigned int length, bool isHorizontal, bool isPositive, bool isFractional);
+    unsigned int length();
+    void getComponents(MatrixStripComponent *components);
+
+protected:
+    unsigned int x;
+    unsigned int y;
+    unsigned int stripLength;
+
+    bool isHorizontal;
+    bool isPositive;
 };
 
 #endif

@@ -1,20 +1,8 @@
 #include "virtualStrip.h"
 
-VirtualStrip::VirtualStrip(unsigned int start, unsigned int end, bool isFractional)
+VirtualStrip::VirtualStrip(bool isFractional)
 {
-    this->start = start;
-    this->end = end;
     this->isFractional = isFractional;
-
-    for (unsigned int pixel = 0; pixel < this->length(); pixel++)
-    {
-        pixels.push_back(new VirtualPixel());
-    }
-}
-
-unsigned int VirtualStrip::length()
-{
-    return abs((int)end - (int)start) + 1;
 }
 
 void VirtualStrip::setMask(uint16_t value)
@@ -84,5 +72,63 @@ void VirtualStrip::applyBlendRange(unsigned int start, unsigned int end, ColourR
             (uint8_t)(startColour.blue + blueInterval * pixel),
             (float)(startColour.alpha + alphaInterval * pixel),
         });
+    }
+}
+
+LinearVirtualStrip::LinearVirtualStrip(unsigned int start, unsigned int end, bool isFractional) : VirtualStrip(isFractional)
+{
+    this->start = start;
+    this->end = end;
+
+    for (unsigned int pixel = 0; pixel < this->length(); pixel++)
+    {
+        pixels.push_back(new VirtualPixel());
+    }
+}
+
+unsigned int LinearVirtualStrip::length()
+{
+    return abs((int)end - (int)start) + 1;
+}
+
+MatrixVirtualStrip::MatrixVirtualStrip(
+    unsigned int x,
+    unsigned int y,
+    unsigned int length,
+    bool isHorizontal,
+    bool isPositive,
+    bool isFractional) : VirtualStrip(isFractional)
+{
+    this->x = x;
+    this->y = y;
+    this->stripLength = length;
+    this->isHorizontal = isHorizontal;
+    this->isPositive = isPositive;
+
+    for (unsigned int pixel = 0; pixel < this->length(); pixel++)
+    {
+        pixels.push_back(new VirtualPixel());
+    }
+}
+
+unsigned int MatrixVirtualStrip::length()
+{
+    return stripLength;
+}
+
+void MatrixVirtualStrip::getComponents(MatrixStripComponent *components)
+{
+    unsigned int count = length();
+
+    int8_t positivity = isPositive ? 1 : -1;
+    int8_t horizontality = isHorizontal ? 1 : 0;
+    int8_t verticality = isHorizontal ? 0 : 1;
+
+    for (unsigned int component = 0; component < count; component++)
+    {
+        components[component] = {
+            x + (component * positivity) * horizontality,
+            y + (component * positivity) * verticality,
+            pixels[component]};
     }
 }

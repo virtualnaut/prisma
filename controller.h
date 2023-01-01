@@ -10,15 +10,7 @@
 #include "setup.h"
 #include "virtualStrip.h"
 #include "matrix.h"
-
-#define MAX_VIRTUAL_STRIPS 256
-
-typedef struct VirtualStripMessage
-{
-    bool isFractional;  // Whether values set on this strip are fractions of the full strip of a number of pixels.
-    unsigned int start; // The start pixel for this strip.
-    unsigned int end;   // The end pixel for this strip.
-} VirtualStripMessage;
+#include "messages.h"
 
 enum VirtualStripStatus
 {
@@ -46,7 +38,7 @@ public:
     void setMelds(const bool melds[STRIP_COUNT]);
     void setOrder(const char order[STRIP_COUNT]);
 
-    VirtualStripStatus setVirtualStrips(VirtualStripMessage strips[MAX_VIRTUAL_STRIPS], char count);
+    VirtualStripStatus setVirtualStrips(LinearVirtualStripMessage strips[MAX_VIRTUAL_STRIPS], char count);
 
     VirtualStrip *getVirtualStrip(unsigned int strip);
 
@@ -64,7 +56,7 @@ protected:
     std::vector<Strip *> strips;
     unsigned int pixelCount = 0;
 
-    std::vector<VirtualStrip *> virtualStrips;
+    std::vector<LinearVirtualStrip *> virtualStrips;
 
     bool melds[STRIP_COUNT];
     char order[STRIP_COUNT];
