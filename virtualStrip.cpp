@@ -111,6 +111,14 @@ MatrixVirtualStrip::MatrixVirtualStrip(
     }
 }
 
+MatrixVirtualStrip::~MatrixVirtualStrip()
+{
+    for (unsigned int pixel = 0; pixel < length(); pixel++)
+    {
+        delete pixels[pixel];
+    }
+}
+
 unsigned int MatrixVirtualStrip::length()
 {
     return stripLength;

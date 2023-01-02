@@ -10,6 +10,21 @@ Matrix::Matrix(unsigned int width, unsigned int height) : width(width), height(h
     }
 }
 
+Matrix::~Matrix()
+{
+    for (unsigned int virtualStrip = 0; virtualStrip < this->virtualStrips.size(); virtualStrip++)
+    {
+        delete this->virtualStrips[virtualStrip];
+    }
+    this->virtualStrips.clear();
+
+    for (unsigned int pixel = 0; pixel < this->pixels.size(); pixel++)
+    {
+        delete this->pixels[pixel];
+    }
+    this->pixels.clear();
+}
+
 void Matrix::clearAll()
 {
     for (unsigned int pixel = 0; pixel < length; pixel++)
@@ -45,6 +60,11 @@ void Matrix::setVerticalFlip(bool flipped)
 
 void Matrix::setVirtualStrips(MatrixVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS], char count)
 {
+    for (unsigned int virtualStrip = 0; virtualStrip < this->virtualStrips.size(); virtualStrip++)
+    {
+        delete this->virtualStrips[virtualStrip];
+    }
+
     this->virtualStrips.clear();
 
     // Make sure that none of the ranges goes outside the number of pixels we have.

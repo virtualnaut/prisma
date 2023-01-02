@@ -162,7 +162,7 @@ void handleMeld()
 
 void handleLinearVirtualStrips()
 {
-    LinearVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
+    static LinearVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
     unsigned int stripCount = (contentSize - 1) / LINEAR_VIRTUAL_STRIP_SIZE;
 
     if ((contentSize - 1) % LINEAR_VIRTUAL_STRIP_SIZE)
@@ -204,7 +204,7 @@ void handleLinearVirtualStrips()
 
 void handleMatrixStrips()
 {
-    MatrixVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
+    static MatrixVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
     unsigned int stripCount = (contentSize - 1) / MATRIX_VIRTUAL_STRIP_SIZE;
 
     if ((contentSize - 1) % MATRIX_VIRTUAL_STRIP_SIZE)

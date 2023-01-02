@@ -12,6 +12,7 @@ class Matrix
 {
 public:
     Matrix(unsigned int width, unsigned int height);
+    ~Matrix();
 
     void clearAll();
 

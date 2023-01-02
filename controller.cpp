@@ -173,5 +173,6 @@ void Controller::setMask(unsigned int strip, uint16_t value)
 void Controller::initialiseMatrix(unsigned int width, unsigned int height)
 {
     mode = ControllerMode::MatrixMode;
+    delete matrix;
     matrix = new Matrix(width, height);
 }

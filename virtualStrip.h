@@ -56,6 +56,7 @@ class MatrixVirtualStrip : public virtual VirtualStrip
 {
 public:
     MatrixVirtualStrip(unsigned int x, unsigned int y, unsigned int length, bool isHorizontal, bool isPositive, bool isFractional);
+    ~MatrixVirtualStrip();
     unsigned int length();
     void getComponents(MatrixStripComponent *components);
 
