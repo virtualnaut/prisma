@@ -15,10 +15,20 @@ typedef struct MatrixStripComponent
     VirtualPixel *pixel;
 } MatrixStripComponent;
 
+enum MaskMode
+{
+    Fill = 0,    // Mask defines a pixel. Show all pixels between the start and this pixel.
+    Dot,         // Mask defines a pixel which is the only pixel that should be shown.
+    FillReverse, // Mask defines a pixel. Show all pixels from this pixel to the end.
+    // Alpha,       // Mask defines a transparency which is applied to the existing colours.
+    // Dim          // Mask defines an amount to dim the pixels by.
+    // HueRotation // Mask defines an amount round the colour wheel to rotate the colour of each pixel.
+};
+
 class VirtualStrip
 {
 public:
-    VirtualStrip(bool isFractional);
+    VirtualStrip(bool isFractional, MaskMode mode);
 
     virtual unsigned int length() = 0;
 
@@ -39,12 +49,13 @@ public:
 
 protected:
     std::vector<VirtualPixel *> pixels;
+    MaskMode mode;
 };
 
 class LinearVirtualStrip : public virtual VirtualStrip
 {
 public:
-    LinearVirtualStrip(unsigned int start, unsigned int end, bool isFractional);
+    LinearVirtualStrip(unsigned int start, unsigned int end, bool isFractional, MaskMode mode);
     unsigned int length();
     unsigned int start;
     unsigned int end;
@@ -55,15 +66,25 @@ protected:
 class MatrixVirtualStrip : public virtual VirtualStrip
 {
 public:
-    MatrixVirtualStrip(unsigned int x, unsigned int y, unsigned int length, bool isHorizontal, bool isPositive, bool isFractional);
+    MatrixVirtualStrip(
+        unsigned int x,
+        unsigned int y,
+        unsigned int length,
+        unsigned int thickness,
+        bool isHorizontal,
+        bool isPositive,
+        bool isFractional,
+        MaskMode mode);
     ~MatrixVirtualStrip();
     unsigned int length();
+    unsigned int count();
     void getComponents(MatrixStripComponent *components);
 
 protected:
     unsigned int x;
     unsigned int y;
     unsigned int stripLength;
+    unsigned int thickness;
 
     bool isHorizontal;
     bool isPositive;

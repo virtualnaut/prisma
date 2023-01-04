@@ -132,7 +132,7 @@ VirtualStripStatus Controller::setVirtualStrips(LinearVirtualStripMessage virtua
             return VirtualStripStatus::OutOfBounds;
         }
 
-        this->virtualStrips.push_back(new LinearVirtualStrip(strip.start, strip.end, strip.isFractional));
+        this->virtualStrips.push_back(new LinearVirtualStrip(strip.start, strip.end, strip.isFractional, strip.mode));
     }
 
     this->mode = ControllerMode::SingleMode;

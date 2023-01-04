@@ -1,8 +1,9 @@
 #include "virtualStrip.h"
 
-VirtualStrip::VirtualStrip(bool isFractional)
+VirtualStrip::VirtualStrip(bool isFractional, MaskMode mode)
 {
     this->isFractional = isFractional;
+    this->mode = mode;
 }
 
 void VirtualStrip::setMask(uint16_t value)
@@ -12,9 +13,29 @@ void VirtualStrip::setMask(uint16_t value)
                         : value;
 
     unsigned int length = this->length();
-    for (unsigned int pixel = 0; pixel < length; pixel++)
+
+    switch (mode)
     {
-        getPixel(pixel)->mask(pixel >= mask);
+    case MaskMode::Fill:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->mask(pixel >= mask);
+        }
+        break;
+    case MaskMode::Dot:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->mask(pixel != mask);
+        }
+        break;
+    case MaskMode::FillReverse:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->mask(pixel < mask);
+        }
+        break;
+    default:
+        Serial.println("Invalid masking mode");
     }
 }
 
@@ -75,7 +96,11 @@ void VirtualStrip::applyBlendRange(unsigned int start, unsigned int end, ColourR
     }
 }
 
-LinearVirtualStrip::LinearVirtualStrip(unsigned int start, unsigned int end, bool isFractional) : VirtualStrip(isFractional)
+LinearVirtualStrip::LinearVirtualStrip(
+    unsigned int start,
+    unsigned int end,
+    bool isFractional,
+    MaskMode mode) : VirtualStrip(isFractional, mode)
 {
     this->start = start;
     this->end = end;
@@ -95,13 +120,16 @@ MatrixVirtualStrip::MatrixVirtualStrip(
     unsigned int x,
     unsigned int y,
     unsigned int length,
+    unsigned int thickness,
     bool isHorizontal,
     bool isPositive,
-    bool isFractional) : VirtualStrip(isFractional)
+    bool isFractional,
+    MaskMode mode) : VirtualStrip(isFractional, mode)
 {
     this->x = x;
     this->y = y;
     this->stripLength = length;
+    this->thickness = thickness;
     this->isHorizontal = isHorizontal;
     this->isPositive = isPositive;
 
@@ -124,19 +152,25 @@ unsigned int MatrixVirtualStrip::length()
     return stripLength;
 }
 
+unsigned int MatrixVirtualStrip::count()
+{
+    return stripLength * thickness;
+}
+
 void MatrixVirtualStrip::getComponents(MatrixStripComponent *components)
 {
-    unsigned int count = length();
-
     int8_t positivity = isPositive ? 1 : -1;
     int8_t horizontality = isHorizontal ? 1 : 0;
     int8_t verticality = isHorizontal ? 0 : 1;
 
-    for (unsigned int component = 0; component < count; component++)
+    for (unsigned int parallel = 0; parallel < thickness; parallel++)
     {
-        components[component] = {
-            x + (component * positivity) * horizontality,
-            y + (component * positivity) * verticality,
-            pixels[component]};
+        for (unsigned int component = 0; component < stripLength; component++)
+        {
+            components[parallel * stripLength + component] = {
+                x + (component * positivity) * horizontality + (verticality * parallel),
+                y + (component * positivity) * verticality + (horizontality * parallel),
+                pixels[component]};
+        }
     }
 }

@@ -7,8 +7,8 @@
 #endif
 
 #define HEADER_SIZE 3
-#define LINEAR_VIRTUAL_STRIP_SIZE 5
-#define MATRIX_VIRTUAL_STRIP_SIZE 9
+#define LINEAR_VIRTUAL_STRIP_SIZE 6
+#define MATRIX_VIRTUAL_STRIP_SIZE 12
 #define MASK_SIZE 3
 
 #define FILL_COLOUR_SIZE 9
@@ -176,8 +176,9 @@ void handleLinearVirtualStrips()
     {
         virtualStrips[strip] = {
             (bool)bluetoothBuffer[(strip * LINEAR_VIRTUAL_STRIP_SIZE + 1)],
-            parseUInt16(bluetoothBuffer, (strip * LINEAR_VIRTUAL_STRIP_SIZE) + 2),
-            parseUInt16(bluetoothBuffer, (strip * LINEAR_VIRTUAL_STRIP_SIZE) + 4)};
+            (MaskMode)bluetoothBuffer[(strip * LINEAR_VIRTUAL_STRIP_SIZE + 2)],
+            parseUInt16(bluetoothBuffer, (strip * LINEAR_VIRTUAL_STRIP_SIZE) + 3),
+            parseUInt16(bluetoothBuffer, (strip * LINEAR_VIRTUAL_STRIP_SIZE) + 5)};
     }
 
     VirtualStripStatus error = lights.setVirtualStrips(virtualStrips, stripCount);
@@ -219,11 +220,13 @@ void handleMatrixStrips()
         unsigned int cursor = strip * MATRIX_VIRTUAL_STRIP_SIZE;
         virtualStrips[strip] = {
             (bool)bluetoothBuffer[(cursor + 1)],
-            (bool)bluetoothBuffer[(cursor + 2)],
+            (MaskMode)bluetoothBuffer[(cursor + 2)],
             (bool)bluetoothBuffer[(cursor + 3)],
-            parseUInt16(bluetoothBuffer, (cursor) + 4),
-            parseUInt16(bluetoothBuffer, (cursor) + 6),
-            parseUInt16(bluetoothBuffer, (cursor) + 8)};
+            (bool)bluetoothBuffer[(cursor + 4)],
+            parseUInt16(bluetoothBuffer, (cursor) + 5),
+            parseUInt16(bluetoothBuffer, (cursor) + 7),
+            parseUInt16(bluetoothBuffer, (cursor) + 9),
+            parseUInt16(bluetoothBuffer, (cursor) + 11)};
     }
 
     lights.getMatrix()->setVirtualStrips(virtualStrips, stripCount);

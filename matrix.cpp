@@ -72,7 +72,15 @@ void Matrix::setVirtualStrips(MatrixVirtualStripMessage virtualStrips[MAX_VIRTUA
     {
         MatrixVirtualStripMessage strip = virtualStrips[virtualStrip];
 
-        this->virtualStrips.push_back(new MatrixVirtualStrip(strip.x, strip.y, strip.length, strip.isHorizontal, strip.isPositive, strip.isFractional));
+        this->virtualStrips.push_back(new MatrixVirtualStrip(
+            strip.x,
+            strip.y,
+            strip.length,
+            strip.thickness,
+            strip.isHorizontal,
+            strip.isPositive,
+            strip.isFractional,
+            strip.mode));
     }
 }
 
@@ -96,7 +104,7 @@ std::vector<VirtualPixel *> Matrix::getPixels()
     size_t stripCount = virtualStrips.size();
     for (unsigned int strip = 0; strip < stripCount; strip++)
     {
-        unsigned int length = virtualStrips[strip]->length();
+        unsigned int length = virtualStrips[strip]->count();
 
         MatrixStripComponent components[length];
         virtualStrips[strip]->getComponents(components);
