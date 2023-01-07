@@ -15,13 +15,14 @@ typedef struct MatrixStripComponent
     VirtualPixel *pixel;
 } MatrixStripComponent;
 
-enum MaskMode
+enum class MaskMode
 {
-    Fill = 0,    // Mask defines a pixel. Show all pixels between the start and this pixel.
-    Dot,         // Mask defines a pixel which is the only pixel that should be shown.
-    FillReverse, // Mask defines a pixel. Show all pixels from this pixel to the end.
-    // Alpha,       // Mask defines a transparency which is applied to the existing colours.
-    // Dim          // Mask defines an amount to dim the pixels by.
+    Fill = 0,     // Mask defines a pixel. Show all pixels between the start and this pixel.
+    Dot,          // Mask defines a pixel which is the only pixel that should be shown.
+    FillReverse,  // Mask defines a pixel. Show all pixels from this pixel to the end.
+    Random,       // Mask defines a probability for each pixel to be masked.
+    Transparency, // Mask defines a factor to apply to the transparency.
+    Brightness,   // Mask defines a factor to apply to the brightness.
     // HueRotation // Mask defines an amount round the colour wheel to rotate the colour of each pixel.
 };
 

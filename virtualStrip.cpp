@@ -12,7 +12,17 @@ void VirtualStrip::setMask(uint16_t value)
                         ? (uint16_t)(((uint16_t)this->length()) * ((double)value / 65535))
                         : value;
 
+    double normalised = isFractional
+                            ? (double)value / 65535
+                            : (double)value / this->length();
+
+    // Clamp our normalised value.
+    normalised = normalised > 1 ? 1 : normalised;
+    normalised = normalised < 0 ? 0 : normalised;
+
     unsigned int length = this->length();
+
+    srand(millis());
 
     switch (mode)
     {
@@ -32,6 +42,24 @@ void VirtualStrip::setMask(uint16_t value)
         for (unsigned int pixel = 0; pixel < length; pixel++)
         {
             getPixel(pixel)->mask(pixel < mask);
+        }
+        break;
+    case MaskMode::Random:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->setMasker(Masker::Random, normalised);
+        }
+        break;
+    case MaskMode::Brightness:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->setMasker(Masker::Brightness, normalised);
+        }
+        break;
+    case MaskMode::Transparency:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->setMasker(Masker::Transparency, normalised);
         }
         break;
     default:
