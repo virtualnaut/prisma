@@ -17,12 +17,13 @@ typedef struct MatrixStripComponent
 
 enum class MaskMode
 {
-    Fill = 0,     // Mask defines a pixel. Show all pixels between the start and this pixel.
-    Dot,          // Mask defines a pixel which is the only pixel that should be shown.
-    FillReverse,  // Mask defines a pixel. Show all pixels from this pixel to the end.
-    Random,       // Mask defines a probability for each pixel to be masked.
-    Transparency, // Mask defines a factor to apply to the transparency.
-    Brightness,   // Mask defines a factor to apply to the brightness.
+    Fill = 0,      // Mask defines a pixel. Show all pixels between the start and this pixel.
+    Dot,           // Mask defines a pixel which is the only pixel that should be shown.
+    FillReverse,   // Mask defines a pixel. Show all pixels from this pixel to the end.
+    Random,        // Mask defines a probability for each pixel to be masked.
+    Transparency,  // Mask defines a factor to apply to the transparency.
+    Brightness,    // Mask defines a factor to apply to the brightness.
+    FillBrightness // Combination of `Fill` and `Brightness`.
     // HueRotation // Mask defines an amount round the colour wheel to rotate the colour of each pixel.
 };
 

@@ -53,14 +53,13 @@ ColourRGB VirtualPixel::getRGB()
 
 ColourRGBA VirtualPixel::getRGBA()
 {
-    if (masker != Masker::None)
-    {
-        return applyMask(Pixel::getRGBA());
-    }
+    ColourRGBA colour = masker != Masker::None
+                            ? applyMask(Pixel::getRGBA())
+                            : Pixel::getRGBA();
 
     return masked
                ? ColourRGBA{0, 0, 0, 0}
-               : Pixel::getRGBA();
+               : colour;
 }
 
 void VirtualPixel::mask(bool isMasked)

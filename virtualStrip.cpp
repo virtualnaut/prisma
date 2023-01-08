@@ -62,6 +62,13 @@ void VirtualStrip::setMask(uint16_t value)
             getPixel(pixel)->setMasker(Masker::Transparency, normalised);
         }
         break;
+    case MaskMode::FillBrightness:
+        for (unsigned int pixel = 0; pixel < length; pixel++)
+        {
+            getPixel(pixel)->mask(pixel >= mask);
+            getPixel(pixel)->setMasker(Masker::Brightness, normalised);
+        }
+        break;
     default:
         Serial.println("Invalid masking mode");
     }
