@@ -74,8 +74,10 @@ In this example, the order of the second and third strips have been swapped, so 
 
 </details>
 
-### Virtual Strips
-The virtual strips command is used to split the melded strip into a number of virtual strips that can be addressed separately.
+### Linear Virtual Strips
+Linear virtual strips are used to define a strip of pixels on a linear arrangement of pixels.
+
+The linear virtual strips command is used to split the melded strip into a number of virtual strips that can be addressed separately.
 
 | Byte | Description                                       |
 | ---- | ------------------------------------------------- |
@@ -86,8 +88,9 @@ The virtual strips command is used to split the melded strip into a number of vi
 | Offset | Description                                                                                                        |
 | ------ | ------------------------------------------------------------------------------------------------------------------ |
 | 0      | Whether pixels are referenced using a pixel offset or a fraction of the length. 0 for pixel offset, else fraction. |
-| 1,2    | The start pixel of the strip (2-byte, BE, unsigned integer)                                                        |
-| 3,4    | The end pixel of the strip (2-byte, BE, unsigned integer)                                                          |
+| 1      | The mode for masking the strip                                                                                     |
+| 2,3    | The start pixel of the strip (2-byte, BE, unsigned integer)                                                        |
+| 4,5    | The end pixel of the strip (2-byte, BE, unsigned integer)                                                          |
 
 <details>
 <summary>Example</summary>
@@ -227,3 +230,23 @@ Update a region of the display with new data.
 | 3    | Width of the region                        |
 | 4    | Height of the region                       |
 | ...  | List of 4-byte RGBA colours (1 per pixel)  |
+
+### Matrix Virtual Strips
+Matrix virtual strips are used to set virtual strip on LEDs configured in a matrix.
+
+| Byte | Description                                              |
+| ---- | -------------------------------------------------------- |
+| 0    | Uppercase 'S'                                            |
+| ...  | A number of matrix virtual strip definitions (see below) |
+
+#### Matrix Virtual Strip Definition
+| Offset | Description                                                                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0      | Whether pixels are referenced using a pixel offset or a fraction of the length. 0 for pixel offset, else fraction.                               |
+| 1      | The mode for masking the strip                                                                                                                   |
+| 2      | Boolean representing whether the strip extends in the positive or negative x/y direction from the start location (0 for negative, else positive) |
+| 3      | Boolean representing whether the strip extends horizontally or vertically (0 for vertical, else horizontal)                                      |
+| 4,5    | The x coordinate of the start pixel of the strip (2-byte, BE, unsigned integer)                                                                  |
+| 6,7    | The y coordinate of the start pixel of the strip (2-byte, BE, unsigned integer)                                                                  |
+| 8,9    | The length of the strip in pixels (2-byte, BE, unsigned integer)                                                                                 |
+| 10,11  | The thickness of the strip in pixels (2-byte, BE, unsigned integer)                                                                              |
