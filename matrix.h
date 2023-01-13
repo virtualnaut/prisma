@@ -5,11 +5,16 @@
 #include <vector>
 
 #include "pixel.h"
+#include "virtualStrip.h"
+#include "messages.h"
 
 class Matrix
 {
 public:
     Matrix(unsigned int width, unsigned int height);
+    ~Matrix();
+
+    void clearAll();
 
     void setPixel(unsigned int x, unsigned int y, ColourRGBA colour);
     VirtualPixel *getPixel(unsigned int pixel);
@@ -17,6 +22,13 @@ public:
 
     void setHorizontalFlip(bool flipped);
     void setVerticalFlip(bool flipped);
+
+    void setVirtualStrips(MatrixVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS], char count);
+    MatrixVirtualStrip *getVirtualStrip(unsigned int strip);
+
+    void setMask(unsigned int strip, uint16_t value);
+
+    std::vector<VirtualPixel *> getPixels();
 
     /** Set a number of pixels starting at (x,y) and bounded by width and height */
     void setRegion(unsigned int x, unsigned int y, unsigned int width, unsigned int height, ColourRGBA *colours);
@@ -26,6 +38,7 @@ public:
 
 protected:
     std::vector<VirtualPixel *> pixels;
+    std::vector<MatrixVirtualStrip *> virtualStrips;
 
     unsigned int width;
     unsigned int height;

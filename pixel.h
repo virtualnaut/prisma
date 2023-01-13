@@ -5,6 +5,14 @@
 
 class VirtualPixel;
 
+enum Masker
+{
+    None = 0,
+    Random,
+    Brightness,
+    Transparency,
+};
+
 class Pixel
 {
 public:
@@ -32,8 +40,14 @@ public:
     ColourRGBA getRGBA();
     void mask(bool isMasked);
 
+    void setMasker(Masker masker, double value);
+
 protected:
+    ColourRGBA applyMask(ColourRGBA colour);
+
     bool masked = false;
+    Masker masker = Masker::None;
+    double maskerValue;
 };
 
 #endif

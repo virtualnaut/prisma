@@ -7,7 +7,8 @@
 #endif
 
 #define HEADER_SIZE 3
-#define VIRTUAL_STRIP_SIZE 5
+#define LINEAR_VIRTUAL_STRIP_SIZE 6
+#define MATRIX_VIRTUAL_STRIP_SIZE 12
 #define MASK_SIZE 3
 
 #define FILL_COLOUR_SIZE 9
@@ -38,7 +39,6 @@ void setup()
 
 void loop()
 {
-
     if (bluetooth.available())
     {
         if (!waitingForSegments || (millis() - lastSegmentTime > BLUETOOTH_SPLIT_MESSAGE_WAIT))
@@ -105,7 +105,10 @@ void processBuffer()
         handleMeld();
         break;
     case 'V':
-        handleVirtualStrips();
+        handleLinearVirtualStrips();
+        break;
+    case 'S':
+        handleMatrixStrips();
         break;
     case 'B':
         handleMask();
@@ -121,13 +124,13 @@ void processBuffer()
         break;
     case '.':
         lights.clearAll();
-        lights.setMask(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
+        // lights.setMask(0, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
         // lights.setMask(1, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
         // lights.setMask(2, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
         // lights.setMask(3, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
         // lights.setMask(4, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
         // lights.setMask(5, (bluetoothBuffer[1] << 8) + bluetoothBuffer[2]);
-        lights.draw();
+        // lights.draw();
         break;
     case ',':
         lights.getMatrix()->setPixel(bluetoothBuffer[1], bluetoothBuffer[2], parseRGBA(bluetoothBuffer, 3));
@@ -157,12 +160,12 @@ void handleMeld()
     lights.setOrder(order);
 }
 
-void handleVirtualStrips()
+void handleLinearVirtualStrips()
 {
-    VirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
-    unsigned int stripCount = (contentSize - 1) / VIRTUAL_STRIP_SIZE;
+    static LinearVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
+    unsigned int stripCount = (contentSize - 1) / LINEAR_VIRTUAL_STRIP_SIZE;
 
-    if ((contentSize - 1) % VIRTUAL_STRIP_SIZE)
+    if ((contentSize - 1) % LINEAR_VIRTUAL_STRIP_SIZE)
     {
         // Invalid message!
         Serial.println("Invalid virtual strip message");
@@ -172,9 +175,10 @@ void handleVirtualStrips()
     for (unsigned int strip = 0; strip < stripCount; strip++)
     {
         virtualStrips[strip] = {
-            (bool)bluetoothBuffer[(strip * VIRTUAL_STRIP_SIZE + 1)],
-            parseUInt16(bluetoothBuffer, (strip * VIRTUAL_STRIP_SIZE) + 2),
-            parseUInt16(bluetoothBuffer, (strip * VIRTUAL_STRIP_SIZE) + 4)};
+            (bool)bluetoothBuffer[(strip * LINEAR_VIRTUAL_STRIP_SIZE + 1)],
+            (MaskMode)bluetoothBuffer[(strip * LINEAR_VIRTUAL_STRIP_SIZE + 2)],
+            parseUInt16(bluetoothBuffer, (strip * LINEAR_VIRTUAL_STRIP_SIZE) + 3),
+            parseUInt16(bluetoothBuffer, (strip * LINEAR_VIRTUAL_STRIP_SIZE) + 5)};
     }
 
     VirtualStripStatus error = lights.setVirtualStrips(virtualStrips, stripCount);
@@ -197,6 +201,35 @@ void handleVirtualStrips()
     {
         lights.getVirtualStrip(strip)->setAll({255, 255, 255, 0.5});
     }
+}
+
+void handleMatrixStrips()
+{
+    static MatrixVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS];
+    unsigned int stripCount = (contentSize - 1) / MATRIX_VIRTUAL_STRIP_SIZE;
+
+    if ((contentSize - 1) % MATRIX_VIRTUAL_STRIP_SIZE)
+    {
+        // Invalid message!
+        Serial.println("Invalid virtual strip message");
+        return;
+    }
+
+    for (unsigned int strip = 0; strip < stripCount; strip++)
+    {
+        unsigned int cursor = strip * MATRIX_VIRTUAL_STRIP_SIZE;
+        virtualStrips[strip] = {
+            (bool)bluetoothBuffer[(cursor + 1)],
+            (MaskMode)bluetoothBuffer[(cursor + 2)],
+            (bool)bluetoothBuffer[(cursor + 3)],
+            (bool)bluetoothBuffer[(cursor + 4)],
+            parseUInt16(bluetoothBuffer, (cursor) + 5),
+            parseUInt16(bluetoothBuffer, (cursor) + 7),
+            parseUInt16(bluetoothBuffer, (cursor) + 9),
+            parseUInt16(bluetoothBuffer, (cursor) + 11)};
+    }
+
+    lights.getMatrix()->setVirtualStrips(virtualStrips, stripCount);
 }
 
 void handleMask()

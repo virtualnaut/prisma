@@ -53,12 +53,37 @@ ColourRGB VirtualPixel::getRGB()
 
 ColourRGBA VirtualPixel::getRGBA()
 {
+    ColourRGBA colour = masker != Masker::None
+                            ? applyMask(Pixel::getRGBA())
+                            : Pixel::getRGBA();
+
     return masked
                ? ColourRGBA{0, 0, 0, 0}
-               : Pixel::getRGBA();
+               : colour;
 }
 
 void VirtualPixel::mask(bool isMasked)
 {
     masked = isMasked;
+}
+
+void VirtualPixel::setMasker(Masker masker, double value)
+{
+    this->masker = masker;
+    this->maskerValue = value;
+}
+
+ColourRGBA VirtualPixel::applyMask(ColourRGBA colour)
+{
+    switch (masker)
+    {
+    case Masker::Random:
+        return ((double)rand() / (double)RAND_MAX) > maskerValue
+                   ? ColourRGBA{0, 0, 0, 0}
+                   : colour;
+    case Masker::Brightness:
+        return colour::dim(colour, maskerValue);
+    case Masker::Transparency:
+        return colour::transparify(colour, maskerValue);
+    }
 }

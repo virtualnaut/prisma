@@ -17,7 +17,7 @@ class Driver
 public:
     Driver(unsigned int count, unsigned int dataPin, unsigned int clockPin);
 
-    virtual void draw(ColourRGB *colours) = 0;
+    virtual void draw(ColourRGB *colours){};
 
 protected:
     unsigned int count;

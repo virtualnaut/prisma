@@ -51,10 +51,10 @@ void Controller::clearAll()
         strips[i]->setAll({0, 0, 0});
     }
 
-    // for (unsigned int strip = 0; strip < virtualStrips.size(); strip++)
-    // {
-    //     virtualStrips[strip]->setAll({0, 0, 0, 0});
-    // }
+    if (mode == ControllerMode::MatrixMode)
+    {
+        getMatrix()->clearAll();
+    }
 }
 
 void Controller::draw()
@@ -74,7 +74,7 @@ void Controller::drawForSingleStrip()
 {
     for (unsigned int strip = 0; strip < virtualStrips.size(); strip++)
     {
-        VirtualStrip *virtualStrip = virtualStrips[strip];
+        LinearVirtualStrip *virtualStrip = virtualStrips[strip];
         for (unsigned int relativePixel = 0; relativePixel < virtualStrip->length(); relativePixel++)
         {
             if (virtualStrip->start <= virtualStrip->end)
@@ -96,9 +96,10 @@ void Controller::drawForSingleStrip()
 
 void Controller::drawForMatrix()
 {
-    for (unsigned int pixel = 0; pixel < matrix->length; pixel++)
+    std::vector<VirtualPixel *> pixels = matrix->getPixels();
+    for (unsigned int pixel = 0; pixel < pixels.size(); pixel++)
     {
-        mergePixel(pixel, matrix->getPixel(pixel));
+        mergePixel(pixel, pixels[pixel]);
     }
 
     for (unsigned int i = 0; i < strips.size(); i++)
@@ -117,21 +118,21 @@ void Controller::setOrder(const char order[STRIP_COUNT])
     memcpy(this->order, order, STRIP_COUNT * sizeof(char));
 }
 
-VirtualStripStatus Controller::setVirtualStrips(VirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS], char count)
+VirtualStripStatus Controller::setVirtualStrips(LinearVirtualStripMessage virtualStrips[MAX_VIRTUAL_STRIPS], char count)
 {
     this->virtualStrips.clear();
 
     // Make sure that none of the ranges goes outside the number of pixels we have.
     for (unsigned int virtualStrip = 0; virtualStrip < count; virtualStrip++)
     {
-        VirtualStripMessage strip = virtualStrips[virtualStrip];
+        LinearVirtualStripMessage strip = virtualStrips[virtualStrip];
 
         if (strip.start >= pixelCount || strip.end >= pixelCount)
         {
             return VirtualStripStatus::OutOfBounds;
         }
 
-        this->virtualStrips.push_back(new VirtualStrip(strip.start, strip.end, strip.isFractional));
+        this->virtualStrips.push_back(new LinearVirtualStrip(strip.start, strip.end, strip.isFractional, strip.mode));
     }
 
     this->mode = ControllerMode::SingleMode;
@@ -140,6 +141,10 @@ VirtualStripStatus Controller::setVirtualStrips(VirtualStripMessage virtualStrip
 
 VirtualStrip *Controller::getVirtualStrip(unsigned int strip)
 {
+    if (mode == ControllerMode::MatrixMode)
+    {
+        return getMatrix()->getVirtualStrip(strip);
+    }
     return virtualStrips[strip];
 }
 
@@ -150,16 +155,24 @@ Matrix *Controller::getMatrix()
 
 void Controller::setMask(unsigned int strip, uint16_t value)
 {
-    if (strip >= virtualStrips.size())
+    if (mode == ControllerMode::SingleMode)
     {
-        Serial.println("Cannot set the mask for an undefined virtual strip");
-        return;
+        if (strip >= virtualStrips.size())
+        {
+            Serial.println("Cannot set the mask for an undefined virtual strip");
+            return;
+        }
+        virtualStrips[strip]->setMask(value);
     }
-    virtualStrips[strip]->setMask(value);
+    else if (mode == ControllerMode::MatrixMode)
+    {
+        matrix->setMask(strip, value);
+    }
 }
 
 void Controller::initialiseMatrix(unsigned int width, unsigned int height)
 {
     mode = ControllerMode::MatrixMode;
+    delete matrix;
     matrix = new Matrix(width, height);
 }
