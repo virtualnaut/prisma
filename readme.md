@@ -149,7 +149,8 @@ The generic form of the strip fill command is:
 | ---- | ----------------------------------------------------------------- |
 | 0    | Uppercase 'F'                                                     |
 | 1    | Index of the virtual strip we are changing the colour of          |
-| 2    | Subcommand character (see below)                                  |
+| 2    | Whether to redraw the display (0 for no, else yes)                |
+| 3    | Subcommand character (see below)                                  |
 | ...  | Subcommand arguments (specific to which subcommand is being used) |
 
 

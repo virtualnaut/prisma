@@ -86,7 +86,9 @@ void Matrix::setVirtualStrips(MatrixVirtualStripMessage virtualStrips[MAX_VIRTUA
 
 MatrixVirtualStrip *Matrix::getVirtualStrip(unsigned int strip)
 {
-    return virtualStrips[strip];
+    return strip < virtualStrips.size()
+               ? virtualStrips[strip]
+               : nullptr;
 }
 
 void Matrix::setMask(unsigned int strip, uint16_t value)
