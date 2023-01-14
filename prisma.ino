@@ -193,8 +193,6 @@ void handleLinearVirtualStrips()
         lights.setAll({0, 0, 0});
         lights.draw();
         break;
-    default:
-        Serial.println("Successfully set the virtual strips");
     }
 
     for (unsigned int strip = 0; strip < stripCount; strip++)
@@ -257,9 +255,10 @@ void handleMask()
 
 void handleFill()
 {
-    unsigned int cursor = 2;
+    unsigned int cursor = 3;
 
     unsigned int strip = bluetoothBuffer[1];
+    bool redraw = bluetoothBuffer[2];
 
     while (cursor < contentSize)
     {
@@ -277,7 +276,11 @@ void handleFill()
         }
     }
 
-    Serial.println("Successfully set strip fill");
+    if (redraw)
+    {
+        lights.clearAll();
+        lights.draw();
+    }
 }
 
 void handleMatrix()
@@ -315,20 +318,41 @@ void handleRegion()
 
 unsigned int handleFillColour(unsigned int strip, unsigned int cursor)
 {
-    lights.getVirtualStrip(strip)->applyColourRange(
-        parseUInt16(bluetoothBuffer, cursor + 1),
-        parseUInt16(bluetoothBuffer, cursor + 3),
-        parseRGBA(bluetoothBuffer, cursor + 5));
+    VirtualStrip *virtualStrip = lights.getVirtualStrip(strip);
+
+    if (virtualStrip != nullptr)
+    {
+        virtualStrip->applyColourRange(
+            parseUInt16(bluetoothBuffer, cursor + 1),
+            parseUInt16(bluetoothBuffer, cursor + 3),
+            parseRGBA(bluetoothBuffer, cursor + 5));
+    }
+    else
+    {
+        // Skip the message if the virtual strip index is invalid.
+        Serial.println("Invalid strip index when setting fill");
+    }
     return cursor + FILL_COLOUR_SIZE;
 }
 
 unsigned int handleFillBlend(unsigned int strip, unsigned int cursor)
 {
-    lights.getVirtualStrip(strip)->applyBlendRange(
-        parseUInt16(bluetoothBuffer, cursor + 1),
-        parseUInt16(bluetoothBuffer, cursor + 3),
-        parseRGBA(bluetoothBuffer, cursor + 5),
-        parseRGBA(bluetoothBuffer, cursor + 9));
+    VirtualStrip *virtualStrip = lights.getVirtualStrip(strip);
+
+    if (virtualStrip != nullptr)
+    {
+        virtualStrip->applyBlendRange(
+            parseUInt16(bluetoothBuffer, cursor + 1),
+            parseUInt16(bluetoothBuffer, cursor + 3),
+            parseRGBA(bluetoothBuffer, cursor + 5),
+            parseRGBA(bluetoothBuffer, cursor + 9));
+    }
+    else
+    {
+        // Skip the message if the virtual strip index is invalid.
+        Serial.println("Invalid strip index when setting fill");
+    }
+
     return cursor + FILL_BLEND_SIZE;
 }
 

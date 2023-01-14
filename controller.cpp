@@ -145,7 +145,10 @@ VirtualStrip *Controller::getVirtualStrip(unsigned int strip)
     {
         return getMatrix()->getVirtualStrip(strip);
     }
-    return virtualStrips[strip];
+
+    return strip < virtualStrips.size()
+               ? virtualStrips[strip]
+               : nullptr;
 }
 
 Matrix *Controller::getMatrix()

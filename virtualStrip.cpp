@@ -107,6 +107,12 @@ void VirtualStrip::setAll(ColourRGBA colour)
 
 void VirtualStrip::applyColourRange(unsigned int start, unsigned int end, ColourRGBA colour)
 {
+    if (start < 0 || start >= length() || end < 0 || end >= length() || start > end)
+    {
+        Serial.printf("Invalid start and/or end (%d, %d)for colour fill range\n", start, end);
+        return;
+    }
+
     for (unsigned int pixel = start; pixel <= end; pixel++)
     {
         getPixel(pixel)->set(colour);
@@ -115,6 +121,12 @@ void VirtualStrip::applyColourRange(unsigned int start, unsigned int end, Colour
 
 void VirtualStrip::applyBlendRange(unsigned int start, unsigned int end, ColourRGBA startColour, ColourRGBA endColour)
 {
+    if (start < 0 || start >= length() || end < 0 || end >= length() || start > end)
+    {
+        Serial.printf("Invalid start and/or end (%d, %d) for blend fill range\n", start, end);
+        return;
+    }
+
     double redInterval = (endColour.red - (int)startColour.red) / (double)(end - start);
     double greenInterval = (endColour.green - (int)startColour.green) / (double)(end - start);
     double blueInterval = (endColour.blue - (int)startColour.blue) / (double)(end - start);
