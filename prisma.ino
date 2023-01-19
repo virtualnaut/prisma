@@ -297,9 +297,10 @@ void handleMatrix()
 void handleRegion()
 {
     unsigned int count = bluetoothBuffer[3] * bluetoothBuffer[4];
+    bool clear = bluetoothBuffer[5];
     ColourRGBA colours[count];
 
-    unsigned int cursor = 5;
+    unsigned int cursor = 6;
     unsigned int pixel = 0;
 
     while (cursor < contentSize)
@@ -309,7 +310,10 @@ void handleRegion()
         pixel++;
     }
 
-    lights.clearAll();
+    if (clear)
+    {
+        lights.clearAll();
+    }
 
     lights.getMatrix()
         ->setRegion(bluetoothBuffer[1], bluetoothBuffer[2], bluetoothBuffer[3], bluetoothBuffer[4], colours);

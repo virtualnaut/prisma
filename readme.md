@@ -223,14 +223,15 @@ The matrix setup command defines the device as a matrix and allows specification
 
 ### Matrix Region
 Update a region of the display with new data.
-| Byte | Description                                |
-| ---- | ------------------------------------------ |
-| 0    | Uppercase 'R'                              |
-| 1    | X-coordinate of the top left of the region |
-| 2    | Y-coordinate of the top left of the region |
-| 3    | Width of the region                        |
-| 4    | Height of the region                       |
-| ...  | List of 4-byte RGBA colours (1 per pixel)  |
+| Byte | Description                                                                        |
+| ---- | ---------------------------------------------------------------------------------- |
+| 0    | Uppercase 'R'                                                                      |
+| 1    | X-coordinate of the top left of the region                                         |
+| 2    | Y-coordinate of the top left of the region                                         |
+| 3    | Width of the region                                                                |
+| 4    | Height of the region                                                               |
+| 5    | Whether to clear the entire display before showing the region (0 for no, else yes) |
+| ...  | List of 4-byte RGBA colours (1 per pixel)                                          |
 
 ### Matrix Virtual Strips
 Matrix virtual strips are used to set virtual strip on LEDs configured in a matrix.
