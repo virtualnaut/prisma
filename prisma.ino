@@ -27,6 +27,9 @@ unsigned int segmentsReceived = 0;
 unsigned int lastSegmentTime = 0;
 
 Controller lights = Controller(STRIPS, STRIP_COUNT);
+// APA102Driver driver = APA102Driver(12, 14, 13)
+
+uint8_t address[6];
 
 void setup()
 {
@@ -35,6 +38,22 @@ void setup()
     bluetooth.begin(BLUETOOTH_NAME);
 
     lights.setMelds(DEFAULT_MELDS);
+    bluetooth.getBtAddress(address);
+
+    Serial.print("Bluetooth address: ");
+    Serial.print(address[0], HEX);
+    Serial.print(":");
+    Serial.print(address[1], HEX);
+    Serial.print(":");
+    Serial.print(address[2], HEX);
+    Serial.print(":");
+    Serial.print(address[3], HEX);
+    Serial.print(":");
+    Serial.print(address[4], HEX);
+    Serial.print(":");
+    Serial.println(address[5], HEX);
+
+    Serial.println("PRISMA ready :)");
 }
 
 void loop()

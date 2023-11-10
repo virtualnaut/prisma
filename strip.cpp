@@ -34,9 +34,9 @@ void Strip::setAll(ColourRGB colour)
 
 void Strip::render(ColourRGB *colours)
 {
-    for (unsigned int pixel; pixel < pixels.size(); pixel++)
+    for (unsigned int pixel = 0; pixel < pixels.size(); pixel++)
     {
-        colours[pixel] = pixels[pixel]->getRGB();
+        colours[pixel] = pixels.at(pixel)->getRGB();
     }
 }
 
