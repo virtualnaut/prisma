@@ -46,3 +46,10 @@ void Strip::draw()
     render(colours);
     this->driver->draw(colours);
 }
+
+void Strip::prepare()
+{
+    ColourRGB colours[count];
+    render(colours);
+    this->driver->prepare(colours);
+}

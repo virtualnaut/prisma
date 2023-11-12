@@ -88,10 +88,12 @@ void Controller::drawForSingleStrip()
         }
     }
 
-    for (unsigned int i = 0; i < strips.size(); i++)
-    {
-        strips[i]->draw();
-    }
+    // for (unsigned int i = 0; i < strips.size(); i++)
+    // {
+    //     // strips[i]->draw();
+    //     strips[i]->prepare();
+    // }
+    Paralleliser::draw(strips);
 }
 
 void Controller::drawForMatrix()

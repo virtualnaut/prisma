@@ -18,7 +18,20 @@ Driver *DriverFactory::create(unsigned int count, unsigned int dataPin, unsigned
     }
 }
 
-void APA102Driver::draw(ColourRGB *colours)
+// void APA102Driver::draw(ColourRGB *colours)
+// {
+//     initialisePins();
+//     startFrame();
+
+//     for (unsigned int colour = 0; colour < count; colour++)
+//     {
+//         sendPixel(colours[colour]);
+//     }
+
+//     endFrame();
+// }
+
+void APA102Driver::prepare(ColourRGB *colours)
 {
     initialisePins();
     startFrame();
@@ -29,6 +42,8 @@ void APA102Driver::draw(ColourRGB *colours)
     }
 
     endFrame();
+
+    queueEmpty = false;
 }
 
 void APA102Driver::initialisePins()
@@ -46,7 +61,11 @@ void APA102Driver::startFrame()
 
 void APA102Driver::endFrame()
 {
-    sendBlanks((count + 14) / 16);
+    // sendBlanks((count + 14) / 16);
+    sendValue(0xFF);
+    sendValue(0xFF);
+    sendValue(0xFF);
+    sendValue(0xFF);
 }
 
 void APA102Driver::sendBit(uint8_t bit)
@@ -60,19 +79,17 @@ void APA102Driver::sendBlanks(unsigned int n)
 {
     for (unsigned int byte = 0; byte < n; byte++)
     {
-        for (unsigned int bit = 0; bit < 8; bit++)
-        {
-            sendBit(LOW);
-        }
+        sendValue(0);
     }
 }
 
 void APA102Driver::sendValue(uint8_t value)
 {
-    for (int bit = 7; bit >= 0; bit--)
-    {
-        sendBit(value >> bit & 1);
-    }
+    dataQueue.push(value);
+    // for (int bit = 7; bit >= 0; bit--)
+    // {
+    //     sendBit(value >> bit & 1);
+    // }
 }
 
 void APA102Driver::sendPixel(ColourRGB colour)
@@ -81,6 +98,20 @@ void APA102Driver::sendPixel(ColourRGB colour)
     sendValue(colour.blue);
     sendValue(colour.green);
     sendValue(colour.red);
+}
+
+uint8_t APA102Driver::popPrepared()
+{
+    if (dataQueue.empty())
+    {
+        queueEmpty = true;
+        return 0;
+    }
+
+    uint8_t value = dataQueue.front();
+    dataQueue.pop();
+
+    return value;
 }
 
 WS2812BDriver::WS2812BDriver(unsigned int count, unsigned int dataPin, unsigned int clockPin) : Driver(count, dataPin, clockPin)

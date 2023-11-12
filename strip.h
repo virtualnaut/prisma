@@ -13,6 +13,8 @@ class Strip
 {
 public:
     Strip(unsigned int count, unsigned int dataPin, unsigned int clockPin, LEDChip ledType);
+    unsigned int dataPin;
+    unsigned int clockPin;
 
     unsigned int count;
 
@@ -21,14 +23,12 @@ public:
 
     void setAll(ColourRGB colour);
     void render(ColourRGB *colours);
+    void prepare();
     void draw();
 
-protected:
     Driver *driver;
 
-    unsigned int dataPin;
-    unsigned int clockPin;
-
+protected:
     std::vector<Pixel *> pixels;
 };
 

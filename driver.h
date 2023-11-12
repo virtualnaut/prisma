@@ -1,6 +1,8 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+#include <queue>
+
 #include <Arduino.h>
 
 #include <NeoPixelBus.h>
@@ -18,6 +20,10 @@ public:
     Driver(unsigned int count, unsigned int dataPin, unsigned int clockPin);
 
     virtual void draw(ColourRGB *colours){};
+    virtual void prepare(ColourRGB *colours){};
+
+    bool queueEmpty = true;
+    virtual uint8_t popPrepared(){};
 
 protected:
     unsigned int count;
@@ -42,7 +48,10 @@ class APA102Driver : public virtual Driver
 
 public:
     APA102Driver(unsigned int count, unsigned int dataPin, unsigned int clockPin) : Driver(count, dataPin, clockPin){};
-    void draw(ColourRGB *colours);
+    // void draw(ColourRGB *colours);
+    void prepare(ColourRGB *colours);
+
+    uint8_t popPrepared();
 
 protected:
     /** Set up the pins */
@@ -61,6 +70,8 @@ protected:
 
     /** Send the end frame */
     void endFrame();
+
+    std::queue<uint8_t> dataQueue;
 };
 
 class WS2812BDriver : public virtual Driver

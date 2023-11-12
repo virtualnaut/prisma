@@ -11,6 +11,7 @@
 #include "virtualStrip.h"
 #include "matrix.h"
 #include "messages.h"
+#include "paralleliser.h"
 
 enum VirtualStripStatus
 {
