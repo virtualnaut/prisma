@@ -58,7 +58,7 @@ void setup()
 
 void loop()
 {
-    if (bluetooth.available())
+    while (bluetooth.available())
     {
         if (!waitingForSegments || (millis() - lastSegmentTime > BLUETOOTH_SPLIT_MESSAGE_WAIT))
         {
